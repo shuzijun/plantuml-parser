@@ -46,6 +46,7 @@ public class ParserProgramAction extends AnAction {
         }
         ParserConfigDialog parserConfigDialog = new ParserConfigDialog(e.getProject(), parserConfig);
         if (parserConfigDialog.showAndGet()) {
+            parserConfig = parserConfigDialog.getParserConfig();
             ParserProgram parserProgram = new ParserProgram(parserConfig);
             try {
                 parserProgram.execute();
