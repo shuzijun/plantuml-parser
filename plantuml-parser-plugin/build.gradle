@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij' version '0.6.5'
+}
+
+group 'com.shuzijun'
+version '0.0.1'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile project(":plantuml-parser-core")
+}
+
+intellij {
+    pluginName 'plantuml-parser'
+    version '2020.1'
+    type 'IU'
+    downloadSources false
+    updateSinceUntilBuild false
+    buildSearchableOptions.enabled(false)
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+test {
+    useJUnitPlatform()
+}

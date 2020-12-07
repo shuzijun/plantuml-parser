@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+}
+
+group 'com.shuzijun'
+archivesBaseName = 'plantuml-parser-core'
+version '0.0.1'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "com.github.javaparser:javaparser-core:3.18.0"
+    compile "commons-io:commons-io:2.8.0"
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+test {
+    useJUnitPlatform()
+}

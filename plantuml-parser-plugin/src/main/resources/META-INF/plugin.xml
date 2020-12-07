@@ -1,0 +1,35 @@
+<idea-plugin>
+    <id>plantuml-parser</id>
+    <name>plantuml-parser</name>
+    <version>0.0.1</version>
+    <vendor email="shuzijun0109@gmail.com" url="https://github.com/shuzijun/plantuml-parser">shuzijun</vendor>
+
+    <description><![CDATA[
+        <p>将Java源代码转换为plantuml</p>
+        <p>Convert the Java source code to Plantuml</p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+            <li>
+            1.Convert the Java source code to Plantuml
+            </li>
+        ]]>
+    </change-notes>
+
+    <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+
+    <idea-version since-build="163.0"/>
+
+    <actions>
+        <action class="com.shuzijun.plantumlparser.plugin.action.ParserProgramAction" id="parserProgramAction"
+                text="Plantuml Parser" description="Generate PumL through the original code">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
