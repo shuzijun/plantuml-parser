@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  */
 public class PUmlMethod {
 
-    private String visibility;
+    private String visibility = "default";
 
     private boolean isStatic;
 

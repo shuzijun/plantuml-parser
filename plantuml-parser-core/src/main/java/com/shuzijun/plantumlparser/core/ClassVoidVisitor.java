@@ -46,9 +46,12 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
         for (FieldDeclaration field : cORid.getFields()) {
             PUmlField pUmlField = new PUmlField();
             if (field.getModifiers().size() != 0) {
-                pUmlField.setVisibility(field.getModifiers().getFirst().get().toString().trim());
-            } else {
-                pUmlField.setVisibility("default");
+                for (Modifier modifier : field.getModifiers()) {
+                    if (VisibilityUtils.isVisibility(modifier.toString().trim())) {
+                        pUmlField.setVisibility(modifier.toString().trim());
+                        break;
+                    }
+                }
             }
             if (parserConfig.isFieldModifier(pUmlField.getVisibility())) {
                 pUmlField.setStatic(field.isStatic());
@@ -61,9 +64,12 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
             PUmlMethod pUmlMethod = new PUmlMethod();
 
             if (method.getModifiers().size() != 0) {
-                pUmlMethod.setVisibility(method.getModifiers().getFirst().get().toString().trim());
-            } else {
-                pUmlMethod.setVisibility("default");
+                for (Modifier modifier : method.getModifiers()) {
+                    if (VisibilityUtils.isVisibility(modifier.toString().trim())) {
+                        pUmlMethod.setVisibility(modifier.toString().trim());
+                        break;
+                    }
+                }
             }
             if (parserConfig.isMethodModifier(pUmlMethod.getVisibility())) {
                 pUmlMethod.setStatic(method.isStatic());
@@ -80,7 +86,7 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
 
         Node node = cORid.getParentNode().get();
 
-        NodeList<ImportDeclaration> importDeclarations =  parseImport(node, pUmlClass, pUmlView);
+        NodeList<ImportDeclaration> importDeclarations = parseImport(node, pUmlClass, pUmlView);
 
         Map<String, String> importMap = new HashMap<>();
         if (importDeclarations != null) {

@@ -7,7 +7,7 @@ package com.shuzijun.plantumlparser.core;
  */
 public class PUmlField {
 
-    private String visibility;
+    private String visibility = "default";
 
     private boolean isStatic;
 

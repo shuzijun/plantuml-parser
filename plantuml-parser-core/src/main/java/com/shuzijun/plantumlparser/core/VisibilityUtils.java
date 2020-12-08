@@ -20,4 +20,20 @@ public class VisibilityUtils {
             return "+";
         }
     }
+
+    public static boolean isVisibility(String visibility) {
+        if (visibility == null) {
+            return false;
+        } else if ("private".equals(visibility)) {
+            return true;
+        } else if ("default".equals(visibility)) {
+            return true;
+        } else if ("protected".equals(visibility)) {
+            return true;
+        } else if ("public".equals(visibility)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
