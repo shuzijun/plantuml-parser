@@ -80,8 +80,7 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
 
         Node node = cORid.getParentNode().get();
 
-        NodeList<ImportDeclaration> importDeclarations = null;
-        parseImport(node, importDeclarations, pUmlClass, pUmlView);
+        NodeList<ImportDeclaration> importDeclarations =  parseImport(node, pUmlClass, pUmlView);
 
         Map<String, String> importMap = new HashMap<>();
         if (importDeclarations != null) {
@@ -121,9 +120,9 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
         super.visit(cORid, pUmlView);
     }
 
-    private void parseImport(Node node, NodeList<ImportDeclaration> importDeclarations, PUmlClass pUmlClass, PUmlView pUmlView) {
+    private NodeList<ImportDeclaration> parseImport(Node node, PUmlClass pUmlClass, PUmlView pUmlView) {
         if (node instanceof CompilationUnit) {
-            importDeclarations = ((CompilationUnit) node).getImports();
+            return ((CompilationUnit) node).getImports();
         } else if (node instanceof ClassOrInterfaceDeclaration) {
             pUmlClass.setClassName(((ClassOrInterfaceDeclaration) node).getNameAsString() + "." + pUmlClass.getClassName());
 
@@ -135,7 +134,8 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
                 pUmlRelation.setRelation("+..");
                 pUmlView.addPUmlRelation(pUmlRelation);
             }
-            parseImport(parentNode, importDeclarations, pUmlClass, pUmlView);
+            parseImport(parentNode, pUmlClass, pUmlView);
         }
+        return null;
     }
 }
