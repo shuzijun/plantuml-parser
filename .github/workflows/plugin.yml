@@ -3,6 +3,7 @@ name: plugin
 on:
   push:
     branches:
+      - main
       - master
 
 jobs:
