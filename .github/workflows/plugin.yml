@@ -27,7 +27,6 @@ jobs:
       uses: ChrisCarini/intellij-platform-plugin-verifier-action@latest
       with:
         ide-versions: |
-          ideaIC:2019.3
           ideaIC:2020.1
           ideaIC:2020.2
           ideaIC:LATEST-EAP-SNAPSHOT
@@ -41,5 +40,5 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         # TODO: This uploads a zip called `distributions`; see what we can do to just upload the produced plugin itself.
-        name: leetcode-editor-snapshot
+        name: plantuml-parser
         path: plantuml-parser-plugin/build/distributions/plantuml-parser-*.*.*.zip
