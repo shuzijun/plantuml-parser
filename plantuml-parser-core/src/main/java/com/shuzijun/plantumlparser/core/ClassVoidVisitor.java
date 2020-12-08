@@ -37,7 +37,7 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
         } else {
             pUmlClass.setClassType("class");
             for (Modifier modifier : cORid.getModifiers()) {
-                if (modifier.toString().contains("abstract")) {
+                if (modifier.toString().trim().contains("abstract")) {
                     pUmlClass.setClassType("abstract class");
                     break;
                 }
@@ -57,6 +57,7 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
                 pUmlField.setStatic(field.isStatic());
                 pUmlField.setType(field.getVariables().getFirst().get().getTypeAsString());
                 pUmlField.setName(field.getVariables().getFirst().get().getNameAsString());
+                pUmlClass.addPUmlFieldList(pUmlField);
             }
 
         }
