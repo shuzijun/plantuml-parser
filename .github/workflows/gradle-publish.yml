@@ -23,7 +23,7 @@ jobs:
       run: gradle plantuml-parser-core:build
 
     - name: Publish to GitHub Packages
-      run: plantuml-parser-core:publish
+      run: gradle plantuml-parser-core:publish
       env:
         USERNAME: ${{ github.actor }}
         PASSWORD: ${{ secrets.GITHUB_TOKEN }}
