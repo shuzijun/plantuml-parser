@@ -1,9 +1,6 @@
 package com.shuzijun.plantumlparser.core;
 
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
-import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -81,10 +78,16 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
         }
         pUmlView.addPUmlClass(pUmlClass);
 
-        NodeList<ImportDeclaration> importDeclarations = ((CompilationUnit) cORid.getParentNode().get()).getImports();
+        Node node = cORid.getParentNode().get();
+
+        NodeList<ImportDeclaration> importDeclarations = null;
+        parseImport(node, importDeclarations, pUmlClass, pUmlView);
+
         Map<String, String> importMap = new HashMap<>();
-        for (ImportDeclaration importDeclaration : importDeclarations) {
-            importMap.put(importDeclaration.getName().getIdentifier(), importDeclaration.getName().toString());
+        if (importDeclarations != null) {
+            for (ImportDeclaration importDeclaration : importDeclarations) {
+                importMap.put(importDeclaration.getName().getIdentifier(), importDeclaration.getName().toString());
+            }
         }
         if (cORid.getImplementedTypes().size() != 0) {
             for (ClassOrInterfaceType implementedType : cORid.getImplementedTypes()) {
@@ -116,5 +119,23 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
         }
 
         super.visit(cORid, pUmlView);
+    }
+
+    private void parseImport(Node node, NodeList<ImportDeclaration> importDeclarations, PUmlClass pUmlClass, PUmlView pUmlView) {
+        if (node instanceof CompilationUnit) {
+            importDeclarations = ((CompilationUnit) node).getImports();
+        } else if (node instanceof ClassOrInterfaceDeclaration) {
+            pUmlClass.setClassName(((ClassOrInterfaceDeclaration) node).getNameAsString() + "." + pUmlClass.getClassName());
+
+            Node parentNode = node.getParentNode().get();
+            if (parentNode instanceof CompilationUnit) {
+                PUmlRelation pUmlRelation = new PUmlRelation();
+                pUmlRelation.setTarget(pUmlClass.getPackageName() + "." + pUmlClass.getClassName());
+                pUmlRelation.setSource(pUmlClass.getPackageName() + "." + pUmlClass.getClassName().substring(0, pUmlClass.getClassName().lastIndexOf(".")));
+                pUmlRelation.setRelation("+..");
+                pUmlView.addPUmlRelation(pUmlRelation);
+            }
+            parseImport(parentNode, importDeclarations, pUmlClass, pUmlView);
+        }
     }
 }

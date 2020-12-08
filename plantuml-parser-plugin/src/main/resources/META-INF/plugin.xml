@@ -1,12 +1,19 @@
 <idea-plugin>
     <id>plantuml-parser</id>
-    <name>plantuml-parser</name>
+    <name>PlantUML Parser</name>
     <version>0.0.1</version>
     <vendor email="shuzijun0109@gmail.com" url="https://github.com/shuzijun/plantuml-parser">shuzijun</vendor>
 
     <description><![CDATA[
         <p>将Java源代码转换为plantuml</p>
         <p>Convert the Java source code to Plantuml</p>
+        <p>This plug-in can convert java source code into plantuml syntax, and can be displayed with the help of <a href="https://plugins.jetbrains.com/plugin/7017-plantuml-integration">PlantUML integration</a> or <a href="https://plugins.jetbrains.com/plugin/7793-markdown">markdown</a>.This will greatly save your time to write puml.</p>
+        <p>Select the java file or folder to be parsed in the project, right-click and select "Plantuml Parser", fill in the output file name (you can see the complete path in the dialog box) and configure other options, and click "generate" to complete.</p>
+        <p>If you have any questions or suggestions, you can talk to <a href="https://github.com/shuzijun/plantuml-parser">plantuml-parser</a></p>
+        <p>You can refer to the git below to start your use.</p>
+        <p>
+			<img src="https://raw.githubusercontent.com/shuzijun/plantuml-parser/master/doc/demo.gif" alt="demo" />
+		</p>
     ]]></description>
 
     <change-notes><![CDATA[
@@ -28,7 +35,7 @@
 
     <actions>
         <action class="com.shuzijun.plantumlparser.plugin.action.ParserProgramAction" id="parserProgramAction"
-                text="Plantuml Parser" description="Generate PumL through the original code">
+                text="PlantUML Parser" description="Generate PumL through the original code">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
     </actions>
