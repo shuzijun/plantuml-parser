@@ -1,5 +1,6 @@
 package com.shuzijun.plantumlparser.plugin.window;
 
+import com.github.javaparser.ParserConfiguration;
 import com.intellij.ui.DocumentAdapter;
 import com.shuzijun.plantumlparser.plugin.utils.PropertiesUtils;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +32,9 @@ public class ParserConfigPanel {
     private JCheckBox methodProtectedCheckBox;
     private JCheckBox methodDefaultCheckBox;
     private JCheckBox methodPublicCheckBox;
+    private JComboBox languageLevelComboBox;
+    private JCheckBox showPackageCheckBox;
+    private JCheckBox constructorsCheckBox;
 
     public ParserConfigPanel(String basePath) {
         this.basePath = basePath;
@@ -42,7 +46,10 @@ public class ParserConfigPanel {
                 filePath.setText(fileDirectory.getText() + File.separator + fileName.getText() + ".puml");
             }
         });
-
+        for (ParserConfiguration.LanguageLevel value : ParserConfiguration.LanguageLevel.values()) {
+            languageLevelComboBox.addItem(value);
+        }
+        languageLevelComboBox.setSelectedItem(ParserConfiguration.LanguageLevel.JAVA_8);
 
     }
 
@@ -93,5 +100,17 @@ public class ParserConfigPanel {
             throw new NullPointerException(PropertiesUtils.getInfo("fileName.empty"));
         }
         return filePath.getText();
+    }
+
+    public ParserConfiguration.LanguageLevel getLanguageLevel() {
+        return (ParserConfiguration.LanguageLevel) languageLevelComboBox.getSelectedItem();
+    }
+
+    public boolean getShowPackage() {
+        return showPackageCheckBox.isSelected();
+    }
+
+    public boolean getConstructors() {
+        return constructorsCheckBox.isSelected();
     }
 }

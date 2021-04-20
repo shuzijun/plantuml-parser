@@ -56,7 +56,7 @@ public class PUmlClass {
 
     @Override
     public String toString() {
-        return classType + " " + packageName + "." + className + " {\n" +
+        return classType + " " + ((packageName == null || packageName.trim().equals("")) ? "" : (packageName + ".")) + className + " {\n" +
                 (pUmlFieldList.isEmpty() ? "" : pUmlFieldList.stream().map(pUmlField -> pUmlField.toString()).collect(Collectors.joining("\n")) + "\n") +
                 (pUmlMethodList.isEmpty() ? "" : pUmlMethodList.stream().map(pUmlField -> pUmlField.toString()).collect(Collectors.joining("\n")) + "\n") +
                 "}";

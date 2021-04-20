@@ -1,5 +1,6 @@
 package com.shuzijun.plantumlparser.core;
 
+import com.github.javaparser.ParserConfiguration;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -25,6 +26,11 @@ public class ParserConfig {
 
     private Set<String> methodModifier = new HashSet<>();
 
+    private boolean showPackage = true;
+
+    private boolean showConstructors = false;
+
+    private ParserConfiguration.LanguageLevel languageLevel = ParserConfiguration.LanguageLevel.JAVA_8;
 
     public String getOutFilePath() {
         return outFilePath;
@@ -66,4 +72,27 @@ public class ParserConfig {
         return methodModifier.contains(modifier);
     }
 
+    public boolean isShowPackage() {
+        return showPackage;
+    }
+
+    public void setShowPackage(boolean showPackage) {
+        this.showPackage = showPackage;
+    }
+
+    public boolean isShowConstructors() {
+        return showConstructors;
+    }
+
+    public void setShowConstructors(boolean showConstructors) {
+        this.showConstructors = showConstructors;
+    }
+
+    public ParserConfiguration.LanguageLevel getLanguageLevel() {
+        return languageLevel;
+    }
+
+    public void setLanguageLevel(ParserConfiguration.LanguageLevel languageLevel) {
+        this.languageLevel = languageLevel;
+    }
 }

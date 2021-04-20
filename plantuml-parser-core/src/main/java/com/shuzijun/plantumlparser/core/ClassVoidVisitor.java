@@ -1,10 +1,7 @@
 package com.shuzijun.plantumlparser.core;
 
 import com.github.javaparser.ast.*;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
@@ -30,7 +27,11 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
     @Override
     public void visit(ClassOrInterfaceDeclaration cORid, PUmlView pUmlView) {
         PUmlClass pUmlClass = new PUmlClass();
-        pUmlClass.setPackageName(packageName);
+        if (parserConfig.isShowPackage()) {
+            pUmlClass.setPackageName(packageName);
+        } else {
+            pUmlClass.setPackageName("");
+        }
         pUmlClass.setClassName(cORid.getNameAsString());
         if (cORid.isInterface()) {
             pUmlClass.setClassType("interface");
@@ -60,6 +61,29 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
                 pUmlClass.addPUmlFieldList(pUmlField);
             }
 
+        }
+        if(parserConfig.isShowConstructors()){
+            for (ConstructorDeclaration constructor : cORid.getConstructors()) {
+                PUmlMethod pUmlMethod = new PUmlMethod();
+                if (constructor.getModifiers().size() != 0) {
+                    for (Modifier modifier : constructor.getModifiers()) {
+                        if (VisibilityUtils.isVisibility(modifier.toString().trim())) {
+                            pUmlMethod.setVisibility(modifier.toString().trim());
+                            break;
+                        }
+                    }
+                }
+                if (parserConfig.isMethodModifier(pUmlMethod.getVisibility())) {
+                    pUmlMethod.setStatic(constructor.isStatic());
+                    pUmlMethod.setAbstract(constructor.isAbstract());
+                    pUmlMethod.setReturnType("<<Create>>");
+                    pUmlMethod.setName(constructor.getNameAsString());
+                    for (Parameter parameter : constructor.getParameters()) {
+                        pUmlMethod.addParam(parameter.getTypeAsString());
+                    }
+                    pUmlClass.addPUmlMethodList(pUmlMethod);
+                }
+            }
         }
         for (MethodDeclaration method : cORid.getMethods()) {
             PUmlMethod pUmlMethod = new PUmlMethod();
@@ -98,11 +122,15 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
         if (cORid.getImplementedTypes().size() != 0) {
             for (ClassOrInterfaceType implementedType : cORid.getImplementedTypes()) {
                 PUmlRelation pUmlRelation = new PUmlRelation();
-                pUmlRelation.setTarget(pUmlClass.getPackageName() + "." + pUmlClass.getClassName());
+                pUmlRelation.setTarget(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName());
                 if (importMap.containsKey(implementedType.getNameAsString())) {
-                    pUmlRelation.setSource(importMap.get(implementedType.getNameAsString()));
+                    if (parserConfig.isShowPackage()) {
+                        pUmlRelation.setSource(importMap.get(implementedType.getNameAsString()));
+                    } else {
+                        pUmlRelation.setSource(implementedType.getNameAsString());
+                    }
                 } else {
-                    pUmlRelation.setSource(pUmlClass.getPackageName() + "." + implementedType.getNameAsString());
+                    pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + implementedType.getNameAsString());
                 }
                 pUmlRelation.setRelation("<|..");
                 pUmlView.addPUmlRelation(pUmlRelation);
@@ -112,11 +140,15 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
         if (cORid.getExtendedTypes().size() != 0) {
             for (ClassOrInterfaceType extendedType : cORid.getExtendedTypes()) {
                 PUmlRelation pUmlRelation = new PUmlRelation();
-                pUmlRelation.setTarget(pUmlClass.getPackageName() + "." + pUmlClass.getClassName());
+                pUmlRelation.setTarget(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName());
                 if (importMap.containsKey(extendedType.getNameAsString())) {
-                    pUmlRelation.setSource(importMap.get(extendedType.getNameAsString()));
+                    if (parserConfig.isShowPackage()) {
+                        pUmlRelation.setSource(importMap.get(extendedType.getNameAsString()));
+                    } else {
+                        pUmlRelation.setSource(extendedType.getNameAsString());
+                    }
                 } else {
-                    pUmlRelation.setSource(pUmlClass.getPackageName() + "." + extendedType.getNameAsString());
+                    pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + extendedType.getNameAsString());
                 }
                 pUmlRelation.setRelation("<|--");
                 pUmlView.addPUmlRelation(pUmlRelation);
@@ -136,13 +168,21 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
             Node parentNode = node.getParentNode().get();
             if (parentNode instanceof CompilationUnit) {
                 PUmlRelation pUmlRelation = new PUmlRelation();
-                pUmlRelation.setTarget(pUmlClass.getPackageName() + "." + pUmlClass.getClassName());
-                pUmlRelation.setSource(pUmlClass.getPackageName() + "." + pUmlClass.getClassName().substring(0, pUmlClass.getClassName().lastIndexOf(".")));
+                pUmlRelation.setTarget(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName());
+                pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName().substring(0, pUmlClass.getClassName().lastIndexOf(".")));
                 pUmlRelation.setRelation("+..");
                 pUmlView.addPUmlRelation(pUmlRelation);
             }
             parseImport(parentNode, pUmlClass, pUmlView);
         }
         return null;
+    }
+
+    private String getPackageNamePrefix(String packageName){
+        if(packageName ==null || packageName.trim().equals("")){
+            return "";
+        }else {
+            return packageName+ ".";
+        }
     }
 }

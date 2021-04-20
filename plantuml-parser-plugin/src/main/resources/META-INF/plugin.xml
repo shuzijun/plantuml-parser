@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>plantuml-parser</id>
     <name>PlantUML Parser</name>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <vendor email="shuzijun0109@gmail.com" url="https://github.com/shuzijun/plantuml-parser">shuzijun</vendor>
 
     <description><![CDATA[
@@ -28,6 +28,9 @@
     ]]></description>
 
     <change-notes><![CDATA[
+            <li>
+            2.fix bugs
+            </li>
             <li>
             1.Convert the Java source code to Plantuml
             </li>

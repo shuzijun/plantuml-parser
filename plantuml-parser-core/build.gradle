@@ -5,14 +5,14 @@ plugins {
 
 group 'com.shuzijun'
 archivesBaseName = 'plantuml-parser-core'
-version '0.0.3'
+version '0.0.4'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile "com.github.javaparser:javaparser-core:3.18.0"
+    compile "com.github.javaparser:javaparser-core:3.20.2"
     compile "commons-io:commons-io:2.8.0"
 }
 

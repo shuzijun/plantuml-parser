@@ -46,7 +46,12 @@ public class ParserProgramAction extends AnAction {
         }
         ParserConfigDialog parserConfigDialog = new ParserConfigDialog(e.getProject(), parserConfig);
         if (parserConfigDialog.showAndGet()) {
-            parserConfig = parserConfigDialog.getParserConfig();
+            try {
+                parserConfig = parserConfigDialog.getParserConfig();
+            }catch (NullPointerException nullPointerException){
+                Notifications.Bus.notify(new Notification("plantuml-parser", "", nullPointerException.getMessage(), NotificationType.ERROR), e.getProject());
+                throw nullPointerException;
+            }
             ParserProgram parserProgram = new ParserProgram(parserConfig);
             try {
                 parserProgram.execute();
@@ -111,6 +116,9 @@ public class ParserProgramAction extends AnAction {
             parserConfig.setOutFilePath(parserConfigPanel.getFilePath());
             parserConfigPanel.getField().forEach(s -> parserConfig.addFieldModifier(s));
             parserConfigPanel.getMethod().forEach(s -> parserConfig.addMethodModifier(s));
+            parserConfig.setLanguageLevel(parserConfigPanel.getLanguageLevel());
+            parserConfig.setShowPackage(parserConfigPanel.getShowPackage());
+            parserConfig.setShowConstructors(parserConfigPanel.getConstructors());
             return parserConfig;
         }
     }
