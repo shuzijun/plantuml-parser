@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.shuzijun'
-version '0.0.2'
+version '0.0.3'
 
 repositories {
     mavenCentral()
@@ -16,7 +16,7 @@ dependencies {
 
 intellij {
     pluginName 'plantuml-parser'
-    version '2020.1'
+    version '2021.1'
     type 'IU'
     downloadSources false
     updateSinceUntilBuild false

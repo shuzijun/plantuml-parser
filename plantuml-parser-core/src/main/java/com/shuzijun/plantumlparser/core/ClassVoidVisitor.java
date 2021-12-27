@@ -13,7 +13,7 @@ import java.util.Map;
  *
  * @author shuzijun
  */
-public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
+public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
 
     private final String packageName;
 
@@ -25,13 +25,14 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
     }
 
     @Override
-    public void visit(ClassOrInterfaceDeclaration cORid, PUmlView pUmlView) {
-        PUmlClass pUmlClass = new PUmlClass();
-        if (parserConfig.isShowPackage()) {
-            pUmlClass.setPackageName(packageName);
-        } else {
-            pUmlClass.setPackageName("");
+    public void visit(ClassOrInterfaceDeclaration cORid, PUml pUml) {
+        if (!(pUml instanceof PUmlView)) {
+            super.visit(cORid, pUml);
+            return;
         }
+        PUmlView pUmlView = (PUmlView) pUml;
+        PUmlClass pUmlClass = createUmlClass();
+
         pUmlClass.setClassName(cORid.getNameAsString());
         if (cORid.isInterface()) {
             pUmlClass.setClassType("interface");
@@ -44,69 +45,10 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
                 }
             }
         }
-        for (FieldDeclaration field : cORid.getFields()) {
-            PUmlField pUmlField = new PUmlField();
-            if (field.getModifiers().size() != 0) {
-                for (Modifier modifier : field.getModifiers()) {
-                    if (VisibilityUtils.isVisibility(modifier.toString().trim())) {
-                        pUmlField.setVisibility(modifier.toString().trim());
-                        break;
-                    }
-                }
-            }
-            if (parserConfig.isFieldModifier(pUmlField.getVisibility())) {
-                pUmlField.setStatic(field.isStatic());
-                pUmlField.setType(field.getVariables().getFirst().get().getTypeAsString());
-                pUmlField.setName(field.getVariables().getFirst().get().getNameAsString());
-                pUmlClass.addPUmlFieldList(pUmlField);
-            }
+        cORid.getFields().forEach(p -> p.accept(this, pUmlClass));
+        cORid.getConstructors().forEach(p -> p.accept(this, pUmlClass));
+        cORid.getMethods().forEach(p -> p.accept(this, pUmlClass));
 
-        }
-        if(parserConfig.isShowConstructors()){
-            for (ConstructorDeclaration constructor : cORid.getConstructors()) {
-                PUmlMethod pUmlMethod = new PUmlMethod();
-                if (constructor.getModifiers().size() != 0) {
-                    for (Modifier modifier : constructor.getModifiers()) {
-                        if (VisibilityUtils.isVisibility(modifier.toString().trim())) {
-                            pUmlMethod.setVisibility(modifier.toString().trim());
-                            break;
-                        }
-                    }
-                }
-                if (parserConfig.isMethodModifier(pUmlMethod.getVisibility())) {
-                    pUmlMethod.setStatic(constructor.isStatic());
-                    pUmlMethod.setAbstract(constructor.isAbstract());
-                    pUmlMethod.setReturnType("<<Create>>");
-                    pUmlMethod.setName(constructor.getNameAsString());
-                    for (Parameter parameter : constructor.getParameters()) {
-                        pUmlMethod.addParam(parameter.getTypeAsString());
-                    }
-                    pUmlClass.addPUmlMethodList(pUmlMethod);
-                }
-            }
-        }
-        for (MethodDeclaration method : cORid.getMethods()) {
-            PUmlMethod pUmlMethod = new PUmlMethod();
-
-            if (method.getModifiers().size() != 0) {
-                for (Modifier modifier : method.getModifiers()) {
-                    if (VisibilityUtils.isVisibility(modifier.toString().trim())) {
-                        pUmlMethod.setVisibility(modifier.toString().trim());
-                        break;
-                    }
-                }
-            }
-            if (parserConfig.isMethodModifier(pUmlMethod.getVisibility())) {
-                pUmlMethod.setStatic(method.isStatic());
-                pUmlMethod.setAbstract(method.isAbstract());
-                pUmlMethod.setReturnType(method.getTypeAsString());
-                pUmlMethod.setName(method.getNameAsString());
-                for (Parameter parameter : method.getParameters()) {
-                    pUmlMethod.addParam(parameter.getTypeAsString());
-                }
-                pUmlClass.addPUmlMethodList(pUmlMethod);
-            }
-        }
         pUmlView.addPUmlClass(pUmlClass);
 
         Node node = cORid.getParentNode().get();
@@ -155,8 +97,140 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
 
             }
         }
+        super.visit(cORid, pUml);
+    }
 
-        super.visit(cORid, pUmlView);
+    @Override
+    public void visit(EnumDeclaration enumDeclaration, PUml pUml) {
+        if (!(pUml instanceof PUmlView)) {
+            super.visit(enumDeclaration, pUml);
+            return;
+        }
+        PUmlView pUmlView = (PUmlView) pUml;
+        PUmlClass pUmlClass = createUmlClass();
+
+        pUmlClass.setClassName(enumDeclaration.getNameAsString());
+        pUmlClass.setClassType("enum");
+
+        enumDeclaration.getEntries().forEach(p -> p.accept(this, pUmlClass));
+        enumDeclaration.getFields().forEach(p -> p.accept(this, pUmlClass));
+        enumDeclaration.getConstructors().forEach(p -> p.accept(this, pUmlClass));
+        enumDeclaration.getMethods().forEach(p -> p.accept(this, pUmlClass));
+
+        pUmlView.addPUmlClass(pUmlClass);
+        super.visit(enumDeclaration, pUml);
+    }
+
+    @Override
+    public void visit(FieldDeclaration field, PUml pUml) {
+        if (!(pUml instanceof PUmlClass)) {
+            super.visit(field, pUml);
+            return;
+        }
+        PUmlClass pUmlClass = (PUmlClass) pUml;
+        PUmlField pUmlField = new PUmlField();
+        if (field.getModifiers().size() != 0) {
+            for (Modifier modifier : field.getModifiers()) {
+                if (VisibilityUtils.isVisibility(modifier.toString().trim())) {
+                    pUmlField.setVisibility(modifier.toString().trim());
+                    break;
+                }
+            }
+        }
+        if (parserConfig.isFieldModifier(pUmlField.getVisibility())) {
+            pUmlField.setStatic(field.isStatic());
+            pUmlField.setType(field.getVariables().getFirst().get().getTypeAsString());
+            pUmlField.setName(field.getVariables().getFirst().get().getNameAsString());
+            pUmlClass.addPUmlFieldList(pUmlField);
+        }
+    }
+
+
+    @Override
+    public void visit(ConstructorDeclaration constructor, PUml pUml) {
+        if (!(pUml instanceof PUmlClass)) {
+            super.visit(constructor, pUml);
+            return;
+        }
+        if (!parserConfig.isShowConstructors()) {
+            return;
+        }
+        PUmlClass pUmlClass = (PUmlClass) pUml;
+        PUmlMethod pUmlMethod = new PUmlMethod();
+        if (constructor.getModifiers().size() != 0) {
+            for (Modifier modifier : constructor.getModifiers()) {
+                if (VisibilityUtils.isVisibility(modifier.toString().trim())) {
+                    pUmlMethod.setVisibility(modifier.toString().trim());
+                    break;
+                }
+            }
+        }
+        if (parserConfig.isMethodModifier(pUmlMethod.getVisibility())) {
+            pUmlMethod.setStatic(constructor.isStatic());
+            pUmlMethod.setAbstract(constructor.isAbstract());
+            pUmlMethod.setReturnType("<<Create>>");
+            pUmlMethod.setName(constructor.getNameAsString());
+            for (Parameter parameter : constructor.getParameters()) {
+                pUmlMethod.addParam(parameter.getTypeAsString());
+            }
+            pUmlClass.addPUmlMethodList(pUmlMethod);
+        }
+    }
+
+    @Override
+    public void visit(MethodDeclaration method, PUml pUml) {
+        if (!(pUml instanceof PUmlClass)) {
+            super.visit(method, pUml);
+            return;
+        }
+        PUmlClass pUmlClass = (PUmlClass) pUml;
+
+        PUmlMethod pUmlMethod = new PUmlMethod();
+
+        if (method.getModifiers().size() != 0) {
+            for (Modifier modifier : method.getModifiers()) {
+                if (VisibilityUtils.isVisibility(modifier.toString().trim())) {
+                    pUmlMethod.setVisibility(modifier.toString().trim());
+                    break;
+                }
+            }
+        }
+        if (parserConfig.isMethodModifier(pUmlMethod.getVisibility())) {
+            pUmlMethod.setStatic(method.isStatic());
+            pUmlMethod.setAbstract(method.isAbstract());
+            pUmlMethod.setReturnType(method.getTypeAsString());
+            pUmlMethod.setName(method.getNameAsString());
+            for (Parameter parameter : method.getParameters()) {
+                pUmlMethod.addParam(parameter.getTypeAsString());
+            }
+            pUmlClass.addPUmlMethodList(pUmlMethod);
+        }
+    }
+
+    @Override
+    public void visit(EnumConstantDeclaration enumConstantDeclaration, PUml pUml) {
+        if (!(pUml instanceof PUmlClass)) {
+            super.visit(enumConstantDeclaration, pUml);
+            return;
+        }
+        PUmlClass pUmlClass = (PUmlClass) pUml;
+        PUmlField pUmlField = new PUmlField();
+
+        pUmlField.setName(enumConstantDeclaration.getNameAsString());
+        pUmlField.setType("");
+        pUmlField.setVisibility("public");
+        pUmlClass.addPUmlFieldList(pUmlField);
+
+    }
+
+    private PUmlClass createUmlClass() {
+        PUmlClass pUmlClass = new PUmlClass();
+        if (parserConfig.isShowPackage()) {
+            pUmlClass.setPackageName(packageName);
+        } else {
+            pUmlClass.setPackageName("");
+        }
+        return pUmlClass;
     }
 
     private NodeList<ImportDeclaration> parseImport(Node node, PUmlClass pUmlClass, PUmlView pUmlView) {
@@ -178,11 +252,11 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUmlView> {
         return null;
     }
 
-    private String getPackageNamePrefix(String packageName){
-        if(packageName ==null || packageName.trim().equals("")){
+    private String getPackageNamePrefix(String packageName) {
+        if (packageName == null || packageName.trim().equals("")) {
             return "";
-        }else {
-            return packageName+ ".";
+        } else {
+            return packageName + ".";
         }
     }
 }

@@ -5,7 +5,7 @@ package com.shuzijun.plantumlparser.core;
  *
  * @author shuzijun
  */
-public class PUmlField {
+public class PUmlField implements PUml {
 
     private String visibility = "default";
 

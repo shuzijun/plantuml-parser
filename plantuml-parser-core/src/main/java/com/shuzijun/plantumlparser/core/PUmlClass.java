@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
  *
  * @author shuzijun
  */
-public class PUmlClass {
+public class PUmlClass implements PUml{
     private String packageName;
 
     private String className;

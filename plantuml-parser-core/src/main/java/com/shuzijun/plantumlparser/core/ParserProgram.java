@@ -39,7 +39,7 @@ public class ParserProgram {
         for (File file : files) {
             CompilationUnit compilationUnit = StaticJavaParser.parse(file);
             Optional<PackageDeclaration> packageDeclaration = compilationUnit.getPackageDeclaration();
-            VoidVisitor<PUmlView> classNameCollector = new ClassVoidVisitor(packageDeclaration.isPresent() ? packageDeclaration.get().getNameAsString() : "", parserConfig);
+            VoidVisitor<PUml> classNameCollector = new ClassVoidVisitor(packageDeclaration.isPresent() ? packageDeclaration.get().getNameAsString() : "", parserConfig);
             classNameCollector.visit(compilationUnit, pUmlView);
 
         }
@@ -48,6 +48,9 @@ public class ParserProgram {
             System.out.println(pUmlView);
         } else {
             File outFile = new File(this.parserConfig.getOutFilePath());
+            if (!outFile.getParentFile().exists()) {
+                outFile.getParentFile().mkdirs();
+            }
             if (!outFile.exists()) {
                 outFile.createNewFile();
             }

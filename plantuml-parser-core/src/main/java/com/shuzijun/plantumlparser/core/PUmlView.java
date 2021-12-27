@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
  *
  * @author shuzijun
  */
-public class PUmlView {
+public class PUmlView implements PUml {
 
     private List<PUmlClass> pUmlClassList = new ArrayList<>();
 
