@@ -19,8 +19,12 @@ jobs:
         java-version: '8' # The JDK version to make available on the path.
         java-package: jdk # (jre, jdk, or jdk+fx) - defaults to jdk
         architecture: x64 # (x64 or x86) - defaults to x64
+
+    - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
     - name: Build with Gradle
-      run: gradle plantuml-parser-core:build
+      run: ./gradlew plantuml-parser-core:build
 
     - name: Publish to GitHub Packages
       run: gradle plantuml-parser-core:publish
