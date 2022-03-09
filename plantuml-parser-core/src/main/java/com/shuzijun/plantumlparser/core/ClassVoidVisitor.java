@@ -45,6 +45,13 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
                 }
             }
         }
+
+        if (parserConfig.isShowComment()) {
+            cORid.getComment().ifPresent(comment -> {
+                pUmlClass.setClassComment(comment.getContent());
+            });
+        }
+
         cORid.getFields().forEach(p -> p.accept(this, pUmlClass));
         cORid.getConstructors().forEach(p -> p.accept(this, pUmlClass));
         cORid.getMethods().forEach(p -> p.accept(this, pUmlClass));
@@ -112,6 +119,12 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
         pUmlClass.setClassName(enumDeclaration.getNameAsString());
         pUmlClass.setClassType("enum");
 
+        if (parserConfig.isShowComment()) {
+            enumDeclaration.getComment().ifPresent(comment -> {
+                pUmlClass.setClassComment(comment.getContent());
+            });
+        }
+
         enumDeclaration.getEntries().forEach(p -> p.accept(this, pUmlClass));
         enumDeclaration.getFields().forEach(p -> p.accept(this, pUmlClass));
         enumDeclaration.getConstructors().forEach(p -> p.accept(this, pUmlClass));
@@ -142,6 +155,12 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
             pUmlField.setType(field.getVariables().getFirst().get().getTypeAsString());
             pUmlField.setName(field.getVariables().getFirst().get().getNameAsString());
             pUmlClass.addPUmlFieldList(pUmlField);
+        }
+
+        if (parserConfig.isShowComment()) {
+            field.getComment().ifPresent(comment -> {
+                pUmlField.setComment(comment.getContent());
+            });
         }
     }
 
@@ -175,6 +194,11 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
             }
             pUmlClass.addPUmlMethodList(pUmlMethod);
         }
+        if (parserConfig.isShowComment()) {
+            constructor.getComment().ifPresent(comment -> {
+                pUmlMethod.setComment(comment.getContent());
+            });
+        }
     }
 
     @Override
@@ -205,6 +229,12 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
             }
             pUmlClass.addPUmlMethodList(pUmlMethod);
         }
+
+        if (parserConfig.isShowComment()) {
+            method.getComment().ifPresent(comment -> {
+                pUmlMethod.setComment(comment.getContent());
+            });
+        }
     }
 
     @Override
@@ -221,6 +251,11 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
         pUmlField.setVisibility("public");
         pUmlClass.addPUmlFieldList(pUmlField);
 
+        if (parserConfig.isShowComment()) {
+            enumConstantDeclaration.getComment().ifPresent(comment -> {
+                pUmlField.setComment(comment.getContent());
+            });
+        }
     }
 
     private PUmlClass createUmlClass() {

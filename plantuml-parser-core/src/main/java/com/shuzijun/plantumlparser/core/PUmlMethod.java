@@ -23,6 +23,8 @@ public class PUmlMethod {
 
     private List<String> paramList = new LinkedList<>();
 
+    private String comment;
+
     public String getVisibility() {
         return visibility;
     }
@@ -71,10 +73,24 @@ public class PUmlMethod {
         this.paramList.add(param);
     }
 
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
     @Override
     public String toString() {
         return VisibilityUtils.toCharacter(visibility) + " " + (isStatic ? "{static} " : "") + (isAbstract ? "{abstract}" : "")
                 + returnType + " " + name + "("
+                + (paramList.isEmpty() ? "" : paramList.stream().collect(Collectors.joining(",")))
+                + ")";
+    }
+
+    public String getFullName(){
+        return name + "("
                 + (paramList.isEmpty() ? "" : paramList.stream().collect(Collectors.joining(",")))
                 + ")";
     }

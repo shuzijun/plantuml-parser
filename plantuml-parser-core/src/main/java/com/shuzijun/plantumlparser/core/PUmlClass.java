@@ -16,6 +16,8 @@ public class PUmlClass implements PUml{
 
     private String classType;
 
+    private String classComment;
+
     private List<PUmlField> pUmlFieldList = new LinkedList<>();
 
     private List<PUmlMethod> pUmlMethodList = new LinkedList<>();
@@ -44,6 +46,13 @@ public class PUmlClass implements PUml{
         this.classType = classType;
     }
 
+    public String getClassComment() {
+        return classComment;
+    }
+
+    public void setClassComment(String classComment) {
+        this.classComment = classComment;
+    }
 
     public void addPUmlFieldList(PUmlField pUmlField) {
         this.pUmlFieldList.add(pUmlField);
@@ -56,9 +65,58 @@ public class PUmlClass implements PUml{
 
     @Override
     public String toString() {
-        return classType + " " + ((packageName == null || packageName.trim().equals("")) ? "" : (packageName + ".")) + className + " {\n" +
+
+        String fullClassName = ((packageName == null || packageName.trim().equals("")) ? "" : (packageName + ".")) + className;
+
+        String classStr = classType + " " + fullClassName + " {\n" +
                 (pUmlFieldList.isEmpty() ? "" : pUmlFieldList.stream().map(pUmlField -> pUmlField.toString()).collect(Collectors.joining("\n")) + "\n") +
                 (pUmlMethodList.isEmpty() ? "" : pUmlMethodList.stream().map(pUmlField -> pUmlField.toString()).collect(Collectors.joining("\n")) + "\n") +
                 "}";
+
+        if(getClassComment() != null && getClassComment().length() > 0){
+            classStr += "\nnote top of "+fullClassName+"\n"+getClassComment()+"\nend note\n";
+        }
+
+        StringBuilder fieldComment = new StringBuilder();
+
+        if(!pUmlFieldList.isEmpty()){
+            int commentIdx = 0;
+            for (PUmlField pUmlField : pUmlFieldList) {
+                if(pUmlField.getComment() != null && pUmlField.getComment().length() > 0){
+                    fieldComment.append("note ");
+                    if(commentIdx % 2 != 0){
+                        fieldComment.append("right");
+                    }else{
+                        fieldComment.append("left");
+                    }
+                    fieldComment.append(" of ").append(fullClassName).append("::").append(pUmlField.getName()).append("\n");
+                    fieldComment.append(pUmlField.getComment()).append("\n");
+                    fieldComment.append("end note\n");
+                    commentIdx++;
+                }
+            }
+        }
+
+
+        if(!pUmlMethodList.isEmpty()){
+            int commentIdx = 0;
+            for (PUmlMethod pUmlMethod : pUmlMethodList) {
+                if(pUmlMethod.getComment() != null && pUmlMethod.getComment().length() > 0){
+                    fieldComment.append("note ");
+                    if(commentIdx % 2 != 0){
+                        fieldComment.append("right");
+                    }else{
+                        fieldComment.append("left");
+                    }
+                    fieldComment.append(" of ").append(fullClassName).append("::").append(pUmlMethod.getFullName()).append("\n");
+                    fieldComment.append(pUmlMethod.getComment()).append("\n");
+                    fieldComment.append("end note\n");
+                    commentIdx++;
+                }
+            }
+        }
+
+        classStr += fieldComment.toString();
+        return classStr;
     }
 }

@@ -76,7 +76,7 @@ public class ParserProgramAction extends AnAction {
 
         public ParserConfigDialog(@Nullable Project project, ParserConfig parserConfig) {
             super(project, true);
-            parserConfigPanel = new ParserConfigPanel(project.getBasePath());
+            parserConfigPanel = new ParserConfigPanel(project);
             this.parserConfig = parserConfig;
             setModal(true);
             init();
@@ -119,6 +119,7 @@ public class ParserProgramAction extends AnAction {
             parserConfig.setLanguageLevel(parserConfigPanel.getLanguageLevel());
             parserConfig.setShowPackage(parserConfigPanel.getShowPackage());
             parserConfig.setShowConstructors(parserConfigPanel.getConstructors());
+            parserConfig.setShowComment(parserConfigPanel.getShowComment());
             return parserConfig;
         }
     }
