@@ -30,6 +30,8 @@ public class ParserConfig {
 
     private boolean showConstructors = false;
 
+    private boolean showComment = false;
+
     private ParserConfiguration.LanguageLevel languageLevel = ParserConfiguration.LanguageLevel.JAVA_8;
 
     public String getOutFilePath() {
@@ -94,5 +96,13 @@ public class ParserConfig {
 
     public void setLanguageLevel(ParserConfiguration.LanguageLevel languageLevel) {
         this.languageLevel = languageLevel;
+    }
+
+    public boolean isShowComment() {
+        return showComment;
+    }
+
+    public void setShowComment(boolean showComment) {
+        this.showComment = showComment;
     }
 }
