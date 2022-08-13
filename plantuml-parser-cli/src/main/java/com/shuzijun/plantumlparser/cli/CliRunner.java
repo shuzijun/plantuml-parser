@@ -22,9 +22,6 @@ public class CliRunner {
             CliOptionsHolder.getParserConfigUpdater()
                             .forEach(parserConfigUpdater -> parserConfigUpdater.updateConfig(config, cmd));
 
-            // config.addFilePath("/Users/kevinwallis/projects/plantuml-parser/plantuml-parser-cli/src/main/java/com/shuzijun/plantumlparser/cli");
-            // config.setOutFilePath("/Users/kevinwallis/projects/plantuml-parser/plantuml-parser-cli/src/main/java/com/shuzijun/plantumlparser/cli/out.puml");
-
             final ParserProgram program = new ParserProgram(config);
             program.execute();
         } catch (final Exception ex) {
