@@ -30,6 +30,9 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
             super.visit(cORid, pUml);
             return;
         }
+        if (parserConfig.isExcludeClass(cORid.getNameAsString())){
+            return;
+        }
         PUmlView pUmlView = (PUmlView) pUml;
         PUmlClass pUmlClass = createUmlClass();
 

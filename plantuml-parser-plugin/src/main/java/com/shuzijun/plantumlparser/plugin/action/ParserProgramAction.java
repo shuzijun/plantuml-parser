@@ -11,8 +11,10 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.tools.ToolsBundle;
 import com.shuzijun.plantumlparser.core.ParserConfig;
 import com.shuzijun.plantumlparser.core.ParserProgram;
 import com.shuzijun.plantumlparser.plugin.utils.MTAUtils;
@@ -112,6 +114,16 @@ public class ParserProgramAction extends AnAction {
             return action;
         }
 
+        @Override
+        protected @Nullable ValidationInfo doValidate() {
+            try {
+                parserConfigPanel.getFilePath();
+            }catch (NullPointerException nullPointerException){
+                return new ValidationInfo(nullPointerException.getMessage(),null);
+            }
+            return null;
+        }
+
         public ParserConfig getParserConfig() {
             parserConfig.setOutFilePath(parserConfigPanel.getFilePath());
             parserConfigPanel.getField().forEach(s -> parserConfig.addFieldModifier(s));
@@ -120,6 +132,7 @@ public class ParserProgramAction extends AnAction {
             parserConfig.setShowPackage(parserConfigPanel.getShowPackage());
             parserConfig.setShowConstructors(parserConfigPanel.getConstructors());
             parserConfig.setShowComment(parserConfigPanel.getShowComment());
+            parserConfigPanel.getExcludeClass().forEach(s -> parserConfig.addExcludeClassRegex(s));
             return parserConfig;
         }
     }

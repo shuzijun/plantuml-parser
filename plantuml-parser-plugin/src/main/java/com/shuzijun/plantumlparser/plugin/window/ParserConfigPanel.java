@@ -15,8 +15,7 @@ import javax.swing.event.DocumentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 解析配置
@@ -44,6 +43,7 @@ public class ParserConfigPanel {
     private JCheckBox constructorsCheckBox;
     private JButton chooseFilePath;
     private JCheckBox commentCheckBox;
+    private JTextField excludeClass;
     private PathChooserDialog pathChooserDialog;
 
     public ParserConfigPanel(Project project) {
@@ -144,5 +144,12 @@ public class ParserConfigPanel {
 
     public boolean getShowComment() {
         return commentCheckBox.isSelected();
+    }
+
+    public List<String> getExcludeClass(){
+        if (excludeClass.getText() == null || excludeClass.getText().trim().length() == 0) {
+            return new ArrayList<>();
+        }
+        return Arrays.asList(excludeClass.getText().trim().split(","));
     }
 }

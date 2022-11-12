@@ -4,6 +4,9 @@
 .gradle
 /build/
 
+plantuml-parser-core/build
+plantuml-parser-plugin/build
+
 # Ignore Gradle GUI config
 gradle-app.setting
 

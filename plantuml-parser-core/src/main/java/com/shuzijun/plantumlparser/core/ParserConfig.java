@@ -5,6 +5,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.util.*;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * 解析配置
@@ -21,6 +22,8 @@ public class ParserConfig {
      * 输出文件路径
      */
     private String outFilePath;
+
+    private Set<String> excludeClassRegex = new HashSet<>();
 
     private Set<String> fieldModifier = new HashSet<>();
 
@@ -104,5 +107,27 @@ public class ParserConfig {
 
     public void setShowComment(boolean showComment) {
         this.showComment = showComment;
+    }
+
+    public Set<String> getExcludeClassRegex() {
+        return excludeClassRegex;
+    }
+
+    public void addExcludeClassRegex(String excludeClassRegex) {
+        this.excludeClassRegex.add(excludeClassRegex);
+    }
+    public boolean isExcludeClass(String className) {
+        if(className == null || className.trim().length() == 0){
+            return false;
+        }
+        for (String regex : excludeClassRegex) {
+            try {
+                if(className.matches(regex)){
+                    return true;
+                }
+            }catch (PatternSyntaxException ignore){
+            }
+        }
+        return false;
     }
 }
