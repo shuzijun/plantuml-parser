@@ -275,13 +275,13 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
         if (node instanceof CompilationUnit) {
             return ((CompilationUnit) node).getImports();
         } else if (node instanceof ClassOrInterfaceDeclaration) {
-            pUmlClass.setClassName(((ClassOrInterfaceDeclaration) node).getNameAsString() + "." + pUmlClass.getClassName());
+            pUmlClass.setClassName(((ClassOrInterfaceDeclaration) node).getNameAsString() + "$" + pUmlClass.getClassName());
 
             Node parentNode = node.getParentNode().get();
             if (parentNode instanceof CompilationUnit) {
                 PUmlRelation pUmlRelation = new PUmlRelation();
                 pUmlRelation.setTarget(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName());
-                pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName().substring(0, pUmlClass.getClassName().lastIndexOf(".")));
+                pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName().substring(0, pUmlClass.getClassName().lastIndexOf("$")));
                 pUmlRelation.setRelation("+..");
                 pUmlView.addPUmlRelation(pUmlRelation);
             }
