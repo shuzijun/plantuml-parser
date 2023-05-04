@@ -1,0 +1,3 @@
+install:
+  - ./gradlew plantuml-parser-core:build
+  - ./gradlew plantuml-parser-core:publishToMavenLocal
