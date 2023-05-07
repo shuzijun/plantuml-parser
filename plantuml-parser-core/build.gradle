@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    compile "com.github.javaparser:javaparser-core:3.23.1"
+    compile "com.github.javaparser:javaparser-core:3.25.3"
 
     compile "commons-io:commons-io:2.8.0"
 }
