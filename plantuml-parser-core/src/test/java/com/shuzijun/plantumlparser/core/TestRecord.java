@@ -3,9 +3,7 @@ package com.shuzijun.plantumlparser.core;
 import com.github.javaparser.ParserConfiguration;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 
 public class TestRecord {
@@ -38,18 +36,17 @@ public class TestRecord {
     // purposes.
     private static boolean isUmlEquivalent(String uml1, String uml2) {
         String[] lines1 = uml1.split("\\n");
-        String[] lines2 = uml2.split("\\n");
-        if (lines1.length != lines2.length) {
+        List<String> lines2 = new ArrayList(Arrays.asList(uml2.split("\\n")));
+        if (lines1.length != lines2.size()) {
             return false;
         }
-        Set<String> lines2Set = new HashSet<>(Arrays.asList(lines2));
         for (String line : lines1) {
-            if (!lines2Set.contains(line)) {
+            if (!lines2.contains(line)) {
                 return false;
             }
-            lines2Set.remove(line);
+            lines2.remove(line);
         }
-        return lines2Set.isEmpty();
+        return lines2.isEmpty();
     }
 
     public static void testFiles(String filename1, String filename2) throws IOException {
@@ -66,7 +63,7 @@ public class TestRecord {
     }
 
     public static void main(String[] args) throws IOException {
-        for (int i = 1; i <= 4; i++) {
+        for (int i = 1; i <= 6; i++) {
             testFiles(
                     String.format("Record%d.java", i),
                     String.format("Record%dDesugared.java", i));

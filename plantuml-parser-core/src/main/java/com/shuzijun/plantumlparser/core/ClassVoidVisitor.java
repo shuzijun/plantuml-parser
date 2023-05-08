@@ -200,6 +200,8 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
         }
 
         pUmlView.addPUmlClass(pUmlClass);
+        Node node = recordDeclaration.getParentNode().get();
+        parseImport(node, pUmlClass, pUmlView);
         super.visit(recordDeclaration, pUml);
     }
 
@@ -340,8 +342,8 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
     private NodeList<ImportDeclaration> parseImport(Node node, PUmlClass pUmlClass, PUmlView pUmlView) {
         if (node instanceof CompilationUnit) {
             return ((CompilationUnit) node).getImports();
-        } else if (node instanceof ClassOrInterfaceDeclaration) {
-            pUmlClass.setClassName(((ClassOrInterfaceDeclaration) node).getNameAsString() + "$" + pUmlClass.getClassName());
+        } else if (node instanceof ClassOrInterfaceDeclaration || node instanceof RecordDeclaration) {
+            pUmlClass.setClassName(((TypeDeclaration<?>) node).getNameAsString() + "$" + pUmlClass.getClassName());
 
             Node parentNode = node.getParentNode().get();
             if (parentNode instanceof CompilationUnit) {

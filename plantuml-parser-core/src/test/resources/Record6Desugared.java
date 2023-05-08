@@ -16,6 +16,5 @@ public class Person6 {
     }
 
     public class Name {
-        public Name() {}
     }
 }
