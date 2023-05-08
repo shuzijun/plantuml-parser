@@ -6,7 +6,9 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 类
@@ -135,6 +137,75 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
 
         pUmlView.addPUmlClass(pUmlClass);
         super.visit(enumDeclaration, pUml);
+    }
+
+    @Override
+    public void visit(final RecordDeclaration recordDeclaration, PUml pUml) {
+        if (!(pUml instanceof PUmlView)) {
+            super.visit(recordDeclaration, pUml);
+            return;
+        }
+        PUmlView pUmlView = (PUmlView) pUml;
+        PUmlClass pUmlClass = createUmlClass();
+
+        pUmlClass.setClassName(recordDeclaration.getNameAsString());
+        pUmlClass.setClassType("class");
+
+        if (parserConfig.isShowComment()) {
+            recordDeclaration.getComment().ifPresent(comment -> {
+                pUmlClass.setClassComment(comment.getContent());
+            });
+        }
+
+        // Create a constructor unless a default constructor was provided.
+        boolean needsDefaultConstructor = recordDeclaration.getConstructors().stream().noneMatch(c ->
+                                c.getParameters().equals(recordDeclaration.getParameters()));
+        if (needsDefaultConstructor) {
+            // Visibility should be the same as for the class itself.
+            NodeList<Modifier> modifiers = new NodeList<>();
+            for (Modifier modifier : recordDeclaration.getModifiers()) {
+                if (VisibilityUtils.isVisibility(modifier.toString().trim())) {
+                    modifiers.add(modifier);
+                    break;
+                }
+            }
+            ConstructorDeclaration c = new ConstructorDeclaration(modifiers, pUmlClass.getClassName());
+            c.setParameters(recordDeclaration.getParameters());
+            c.accept(this, pUmlClass);
+        }
+
+        // We need to convert the parameters to private final instance variables.
+        Set<Parameter> parameters = new HashSet<>();
+        recordDeclaration.getParameters().forEach(p -> {
+            parameters.add(p);
+            NodeList<Modifier> modifiers = new NodeList<>();
+            modifiers.add(Modifier.privateModifier());
+            modifiers.add(Modifier.finalModifier());
+            FieldDeclaration field = new FieldDeclaration(modifiers, p.getType(), p.getName().asString());
+            field.accept(this, pUmlClass);
+        });
+
+        // Add constructors and methods, removing parameters from set
+        // if there are explicit getters.
+        for (BodyDeclaration<?> m: recordDeclaration.getMembers()) {
+            if (m instanceof MethodDeclaration) {
+                MethodDeclaration md = (MethodDeclaration) m;
+                Parameter parm = new Parameter(md.getType(), md.getName());
+                parameters.remove(parm);
+            }
+            m.accept(this, pUmlClass);
+        }
+        // Add any getters that were not explicitly created.
+        for (Parameter p : parameters) {
+            MethodDeclaration md = new MethodDeclaration(
+                    new NodeList<>(Modifier.publicModifier()), p.getType(), p.getNameAsString());
+            md.accept(this, pUmlClass);
+        }
+
+        pUmlView.addPUmlClass(pUmlClass);
+        Node node = recordDeclaration.getParentNode().get();
+        parseImport(node, pUmlClass, pUmlView);
+        super.visit(recordDeclaration, pUml);
     }
 
     @Override
@@ -274,8 +345,8 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
     private NodeList<ImportDeclaration> parseImport(Node node, PUmlClass pUmlClass, PUmlView pUmlView) {
         if (node instanceof CompilationUnit) {
             return ((CompilationUnit) node).getImports();
-        } else if (node instanceof ClassOrInterfaceDeclaration) {
-            pUmlClass.setClassName(((ClassOrInterfaceDeclaration) node).getNameAsString() + "$" + pUmlClass.getClassName());
+        } else if (node instanceof ClassOrInterfaceDeclaration || node instanceof RecordDeclaration) {
+            pUmlClass.setClassName(((TypeDeclaration<?>) node).getNameAsString() + "$" + pUmlClass.getClassName());
 
             Node parentNode = node.getParentNode().get();
             if (parentNode instanceof CompilationUnit) {
