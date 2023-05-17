@@ -1,0 +1,5 @@
+@startuml
+class WithConstructor {
++ <<Create>> WithConstructor()
+}
+@enduml

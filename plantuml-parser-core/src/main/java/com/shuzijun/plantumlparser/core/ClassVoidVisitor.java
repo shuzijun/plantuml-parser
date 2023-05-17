@@ -5,6 +5,7 @@ import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -58,7 +59,14 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
         }
 
         cORid.getFields().forEach(p -> p.accept(this, pUmlClass));
-        cORid.getConstructors().forEach(p -> p.accept(this, pUmlClass));
+
+        if (cORid.getConstructors().isEmpty() && parserConfig.isShowDefaultConstructors()) {
+            ConstructorDeclaration defaultConstructor = new ConstructorDeclaration(cORid.getNameAsString());
+            defaultConstructor.accept(this, pUmlClass);
+        } else {
+            cORid.getConstructors().forEach(p -> p.accept(this, pUmlClass));
+        }
+
         cORid.getMethods().forEach(p -> p.accept(this, pUmlClass));
 
         pUmlView.addPUmlClass(pUmlClass);
