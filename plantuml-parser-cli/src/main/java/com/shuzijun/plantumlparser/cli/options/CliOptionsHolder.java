@@ -14,6 +14,7 @@ import com.shuzijun.plantumlparser.cli.options.methodmodifier.MethodPublicModifi
 import com.shuzijun.plantumlparser.cli.options.outfilepath.OutfilePathOption;
 import com.shuzijun.plantumlparser.cli.options.showcomment.ShowCommentOption;
 import com.shuzijun.plantumlparser.cli.options.showconstructors.ShowConstructorsOption;
+import com.shuzijun.plantumlparser.cli.options.showdefaultconstructors.ShowDefaultConstructorsOption;
 import com.shuzijun.plantumlparser.cli.options.showpackage.ShowPackageOption;
 import org.apache.commons.cli.Options;
 
@@ -45,6 +46,7 @@ public class CliOptionsHolder {
         cliOptions.add(new LanguageLevelOption());
         cliOptions.add(new ShowCommentOption());
         cliOptions.add(new ShowConstructorsOption());
+        cliOptions.add(new ShowDefaultConstructorsOption());
         cliOptions.add(new ShowPackageOption());
 
         // This is a special cli option for displaying the help

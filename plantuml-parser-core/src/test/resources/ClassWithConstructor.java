@@ -1,0 +1,5 @@
+class WithConstructor {
+    public WithConstructor() {
+
+    }
+}
