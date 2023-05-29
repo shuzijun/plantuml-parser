@@ -33,6 +33,8 @@ public class ParserConfig {
 
     private boolean showConstructors = false;
 
+    private boolean showDefaultConstructors = false;
+
     private boolean showComment = false;
 
     private ParserConfiguration.LanguageLevel languageLevel = ParserConfiguration.LanguageLevel.JAVA_8;
@@ -91,6 +93,14 @@ public class ParserConfig {
 
     public void setShowConstructors(boolean showConstructors) {
         this.showConstructors = showConstructors;
+    }
+
+    public boolean isShowDefaultConstructors() {
+        return showDefaultConstructors;
+    }
+
+    public void setShowDefaultConstructors(boolean showDefaultConstructors) {
+        this.showDefaultConstructors = showDefaultConstructors;
     }
 
     public ParserConfiguration.LanguageLevel getLanguageLevel() {
