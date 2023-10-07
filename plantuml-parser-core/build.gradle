@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'maven-publish'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.10'
 }
 
 group 'com.shuzijun'
@@ -12,9 +13,11 @@ repositories {
 }
 
 dependencies {
-    compile "com.github.javaparser:javaparser-core:3.25.3"
+    implementation "com.github.javaparser:javaparser-core:3.25.3"
 
-    compile "commons-io:commons-io:2.8.0"
+    implementation "commons-io:commons-io:2.8.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlin:kotlin-compiler"
 }
 
 tasks.withType(JavaCompile) {
@@ -37,4 +40,7 @@ publishing {
             from(components.java)
         }
     }
+}
+kotlin {
+    jvmToolchain(11)
 }
