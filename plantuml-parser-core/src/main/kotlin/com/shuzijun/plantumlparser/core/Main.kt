@@ -37,6 +37,16 @@ fun parseKotlinCode(code: String) {
             for (property in klass.getProperties()) {
                 property.accept(this)
             }
+
+
+            // 获取接口实现和继承类
+            val superClassEntries: List<KtSuperTypeListEntry> = klass.getSuperTypeListEntries()
+            for (superClassEntry in superClassEntries) {
+                if (superClassEntry != null) {
+                    superClassEntry.typeReference!!.text
+                }
+            }
+
             super.visitClassOrObject(klass)
         }
 
@@ -67,6 +77,17 @@ fun parseKotlinCode(code: String) {
 }
 
 fun main() {
-    parseKotlinCode(" // 测试 \n abstract class MyClass:KtTreeVisitor<PUml>() {  // 测试2 \nval myVariable: String = \"Hello, Kotlin!\" \n fun visitElement() {} } "+
-            "class MyClass2 {  val myVariable2: String = \"Hello, Kotlin!\" } ")
+    var code = """
+        class MyClass(val name: String, val age: Int) {
+            private constructor() : this("", 0) {
+                println("Secondary constructor")
+            }
+            
+            val publicProperty: String = "Public Property"
+            private val privateProperty: String = "Private Property"
+            internal val internalProperty: String = "Internal Property"
+            protected val protectedProperty: String = "Protected Property"
+        }
+    """.trimIndent()
+    parseKotlinCode(code)
 }

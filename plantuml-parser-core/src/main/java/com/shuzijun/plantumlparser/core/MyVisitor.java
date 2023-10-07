@@ -19,4 +19,11 @@ public  class MyVisitor extends ParserConfig  {
         }
         return pUmlClass;
     }
+    public String getPackageNamePrefix(String packageName) {
+        if (packageName == null || packageName.trim().equals("")) {
+            return "";
+        } else {
+            return packageName + ".";
+        }
+    }
 }
