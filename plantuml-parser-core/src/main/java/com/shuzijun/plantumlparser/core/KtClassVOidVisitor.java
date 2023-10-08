@@ -1,15 +1,11 @@
 package com.shuzijun.plantumlparser.core;
 
-import com.github.javaparser.ast.*;
-import com.github.javaparser.ast.body.*;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.intellij.psi.PsiComment;
+
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.stubs.IStubElementType;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.lexer.KtTokens;
 import org.jetbrains.kotlin.psi.*;
 import org.jetbrains.kotlin.psi.stubs.elements.KtStubElementTypes;
+import org.jetbrains.kotlin.resolve.ImportPath;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +24,7 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor
 
 
     @Override
-    public Void visitClass(KtClass ktClass, PUml pUml) {
+    public Void visitClassOrObject(KtClassOrObject ktClass, PUml pUml) {
 
         if (!(pUml instanceof PUmlView)) {
             super.visitClassOrObject(ktClass, pUml);
@@ -44,15 +40,21 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor
         PUmlClass pUmlClass = createUmlClass();
 
         pUmlClass.setClassName(ktClass.getName());
-        if (ktClass.isInterface()) {
-            pUmlClass.setClassType("interface");
+        if (ktClass instanceof KtObjectDeclaration) {
+            pUmlClass.setClassType("class");
         } else {
-            if (ktClass.hasModifier(KtTokens.ABSTRACT_KEYWORD)) {
-                pUmlClass.setClassType("abstract class");
+            if (((KtClass) ktClass).isInterface()) {
+                pUmlClass.setClassType("interface");
+            } else if (((KtClass) ktClass).isEnum()) {
+                pUmlClass.setClassType("enum");
             } else {
-                pUmlClass.setClassType("class");
-            }
+                if (ktClass.hasModifier(KtTokens.ABSTRACT_KEYWORD)) {
+                    pUmlClass.setClassType("abstract class");
+                } else {
+                    pUmlClass.setClassType("class");
+                }
 
+            }
         }
 
         if (parserConfig.isShowComment()) {
@@ -61,13 +63,23 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor
             }
         }
 
-        ktClass.getProperties().forEach(p -> p.accept(this, pUmlClass));
+        if (ktClass.getPrimaryConstructor() != null) {
+            ktClass.getPrimaryConstructor().accept(this, pUmlClass);
+        }
 
         ktClass.getDeclarations().forEach(p -> {
-            if (p instanceof KtConstructor) {
+            if (p instanceof KtProperty) {
+                p.accept(this, pUmlClass);
+            } else if (p instanceof KtConstructor) {
                 p.accept(this, pUmlClass);
             } else if (p instanceof KtNamedFunction) {
                 p.accept(this, pUmlClass);
+            } else if (p instanceof KtEnumEntry) {
+                p.accept(this, pUmlClass);
+            } else if (p instanceof KtObjectDeclaration) {
+                p.accept(this, pUml);
+            } else if (p instanceof KtClassOrObject) {
+                p.accept(this, pUml);
             }
         });
 
@@ -81,7 +93,13 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor
         Map<String, String> importMap = new HashMap<>();
         if (importDeclarations != null) {
             for (KtImportDirective importDeclaration : importDeclarations) {
-                importMap.put(importDeclaration.getAliasName(), importDeclaration.getName());
+                ImportPath importPath = importDeclaration.getImportPath();
+                if (importPath.getAlias() == null) {
+                    importMap.put(importPath.getImportedName().asString(), importPath.getFqName().toString());
+                } else {
+                    importMap.put(importPath.getAlias().asString(), importPath.getFqName().toString());
+                }
+
             }
         }
 
@@ -105,14 +123,14 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor
                 } else if (superClassEntry.getElementType() == KtStubElementTypes.SUPER_TYPE_CALL_ENTRY) {
                     PUmlRelation pUmlRelation = new PUmlRelation();
                     pUmlRelation.setTarget(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName());
-                    if (importMap.containsKey(superClassEntry.getText())) {
+                    if (importMap.containsKey(superClassEntry.getTypeReference().getText())) {
                         if (parserConfig.isShowPackage()) {
-                            pUmlRelation.setSource(importMap.get(superClassEntry.getText()));
+                            pUmlRelation.setSource(importMap.get(superClassEntry.getTypeReference().getText()));
                         } else {
-                            pUmlRelation.setSource(superClassEntry.getText());
+                            pUmlRelation.setSource(superClassEntry.getTypeReference().getText());
                         }
                     } else {
-                        pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + superClassEntry.getText());
+                        pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + superClassEntry.getTypeReference().getText());
                     }
                     pUmlRelation.setRelation("<|--");
                     pUmlView.addPUmlRelation(pUmlRelation);
@@ -135,7 +153,7 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor
         pUmlField.setVisibility(VisibilityUtils.toVisibility(property));
 
         if (parserConfig.isFieldModifier(pUmlField.getVisibility())) {
-            pUmlField.setType(getKtTypeReference(property.getTypeReference()));
+            pUmlField.setType(getKtTypeReference(property.getTypeReference(), ""));
             pUmlField.setName(property.getName());
             pUmlClass.addPUmlFieldList(pUmlField);
         }
@@ -148,13 +166,39 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor
         return null;
     }
 
-    private String getKtTypeReference(KtTypeReference reference) {
+    @Override
+    public Void visitEnumEntry(KtEnumEntry enumEntry, PUml pUml) {
+
+        if (!(pUml instanceof PUmlClass)) {
+            super.visitEnumEntry(enumEntry, pUml);
+            return null;
+        }
+        PUmlClass pUmlClass = (PUmlClass) pUml;
+        PUmlField pUmlField = new PUmlField();
+
+        pUmlField.setVisibility(Constant.VisibilityPublic);
+
+        if (parserConfig.isFieldModifier(pUmlField.getVisibility())) {
+            pUmlField.setType("");
+            pUmlField.setName(enumEntry.getName());
+            pUmlClass.addPUmlFieldList(pUmlField);
+        }
+
+        if (parserConfig.isShowComment()) {
+            if (enumEntry.getDocComment() != null) {
+                pUmlField.setComment(enumEntry.getDocComment().getText());
+            }
+        }
+        return null;
+    }
+
+    private String getKtTypeReference(KtTypeReference reference, String defaultValue) {
 
         if (reference != null) {
             return reference.getText();
         }
 
-        return "void";
+        return defaultValue;
     }
 
     public Void visitPrimaryConstructor(KtPrimaryConstructor constructor, PUml pUml) {
@@ -183,7 +227,7 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor
             pUmlMethod.setName(constructor.getName());
 
             for (Object parameter : constructor.getValueParameters()) {
-                pUmlMethod.addParam(getKtTypeReference(((KtParameter) parameter).getTypeReference()));
+                pUmlMethod.addParam(getKtTypeReference(((KtParameter) parameter).getTypeReference(), ""));
             }
             pUmlClass.addPUmlMethodList(pUmlMethod);
         }
@@ -209,10 +253,10 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor
         pUmlMethod.setVisibility(VisibilityUtils.toVisibility(function));
 
         if (parserConfig.isMethodModifier(pUmlMethod.getVisibility())) {
-            pUmlMethod.setReturnType(getKtTypeReference(function.getTypeReference()));
+            pUmlMethod.setReturnType(getKtTypeReference(function.getTypeReference(), "void"));
             pUmlMethod.setName(function.getName());
             for (Object parameter : function.getValueParameters()) {
-                pUmlMethod.addParam(getKtTypeReference(((KtParameter) parameter).getTypeReference()));
+                pUmlMethod.addParam(getKtTypeReference(((KtParameter) parameter).getTypeReference(), "void"));
             }
             pUmlClass.addPUmlMethodList(pUmlMethod);
         }
@@ -247,6 +291,15 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor
         if (node instanceof KtFile) {
             return ((KtFile) node).getImportDirectives();
         } else if (node != null) {
+            if (node instanceof KtClassBody && node.getParent() instanceof KtClassOrObject) {
+                pUmlClass.setClassName(((KtClassOrObject) node.getParent()).getName() + "$" + pUmlClass.getClassName());
+
+                PUmlRelation pUmlRelation = new PUmlRelation();
+                pUmlRelation.setTarget(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName());
+                pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName().substring(0, pUmlClass.getClassName().lastIndexOf("$")));
+                pUmlRelation.setRelation("+..");
+                pUmlView.addPUmlRelation(pUmlRelation);
+            }
             parseImport(node.getParent(), pUmlClass, pUmlView);
         }
         return null;

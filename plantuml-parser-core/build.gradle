@@ -13,11 +13,10 @@ repositories {
 }
 
 dependencies {
-    implementation "com.github.javaparser:javaparser-core:3.25.3"
+    api "com.github.javaparser:javaparser-core:3.25.3"
 
-    implementation "commons-io:commons-io:2.8.0"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation "org.jetbrains.kotlin:kotlin-compiler"
+    api "commons-io:commons-io:2.8.0"
+    api "org.jetbrains.kotlin:kotlin-compiler"
 }
 
 tasks.withType(JavaCompile) {
@@ -40,7 +39,4 @@ publishing {
             from(components.java)
         }
     }
-}
-kotlin {
-    jvmToolchain(11)
 }

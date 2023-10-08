@@ -76,10 +76,13 @@ public class ParserProgramAction extends AnAction {
 
         private ParserConfig parserConfig;
 
+        private Project project;
+
         public ParserConfigDialog(@Nullable Project project, ParserConfig parserConfig) {
             super(project, true);
             parserConfigPanel = new ParserConfigPanel(project);
             this.parserConfig = parserConfig;
+            this.project = project;
             setModal(true);
             init();
             setTitle("ParserConfig");
@@ -132,6 +135,7 @@ public class ParserProgramAction extends AnAction {
             parserConfig.setShowPackage(parserConfigPanel.getShowPackage());
             parserConfig.setShowConstructors(parserConfigPanel.getConstructors());
             parserConfig.setShowComment(parserConfigPanel.getShowComment());
+            parserConfig.setProject(this.project);
             parserConfigPanel.getExcludeClass().forEach(s -> parserConfig.addExcludeClassRegex(s));
             return parserConfig;
         }
