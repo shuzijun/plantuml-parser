@@ -4,14 +4,16 @@ plugins {
 }
 
 group 'com.shuzijun'
-version '0.0.5'
+version '0.0.6'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile project(":plantuml-parser-core")
+    implementation (project(path: ":plantuml-parser-core")) {
+        exclude (group: 'org.jetbrains.kotlin', module: 'kotlin-compiler')
+    }
 }
 
 intellij {
@@ -21,6 +23,7 @@ intellij {
     downloadSources false
     updateSinceUntilBuild false
     buildSearchableOptions.enabled(false)
+    plugins ['org.jetbrains.kotlin']
 }
 
 tasks.withType(JavaCompile) {

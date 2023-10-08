@@ -11,8 +11,8 @@ repositories {
 }
 
 dependencies {
-    compile 'commons-cli:commons-cli:1.5.0'
-    compile project(":plantuml-parser-core")
+    implementation 'commons-cli:commons-cli:1.5.0'
+    implementation project(":plantuml-parser-core")
 }
 
 tasks.withType(JavaCompile) {

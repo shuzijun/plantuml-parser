@@ -1,5 +1,8 @@
 package com.shuzijun.plantumlparser.core;
 
+import org.jetbrains.kotlin.lexer.KtTokens;
+import org.jetbrains.kotlin.psi.KtModifierListOwner;
+
 /**
  * 转换限定符
  *
@@ -34,6 +37,18 @@ public class VisibilityUtils {
             return true;
         } else {
             return false;
+        }
+    }
+
+    public static String toVisibility(KtModifierListOwner ktModifierListOwner) {
+        if  (ktModifierListOwner.hasModifier(KtTokens.PRIVATE_KEYWORD)){
+            return  "private";
+        } else if (ktModifierListOwner.hasModifier(KtTokens.INTERNAL_KEYWORD)){
+            return "private";
+        } else if (ktModifierListOwner.hasModifier(KtTokens.PROTECTED_KEYWORD)){
+            return "protected";
+        } else {
+            return "public";
         }
     }
 }

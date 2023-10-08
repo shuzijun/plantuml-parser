@@ -6,7 +6,7 @@
 
     <description><![CDATA[
         <div>
-          <p>Convert the Java source code to Plantuml.</p>
+          <p>Convert the Java(or kotlin) source code to Plantuml.</p>
         </div>
         <br>
         <div>
@@ -29,10 +29,7 @@
 
     <change-notes><![CDATA[
             <li>
-            2.fix bugs
-            </li>
-            <li>
-            1.Convert the Java source code to Plantuml
+            1.support kotlin
             </li>
         ]]>
     </change-notes>
@@ -40,6 +37,9 @@
     <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
     <depends>com.intellij.modules.platform</depends>
+    <depends optional="true"
+             config-file="plantuml-parser-withKotlin.xml">org.jetbrains.kotlin</depends>
+
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->

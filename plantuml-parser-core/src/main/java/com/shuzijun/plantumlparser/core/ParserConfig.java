@@ -1,7 +1,13 @@
 package com.shuzijun.plantumlparser.core;
 
 import com.github.javaparser.ParserConfiguration;
+import com.intellij.openapi.Disposable;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import org.apache.commons.io.FileUtils;
+import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles;
+import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment;
+import org.jetbrains.kotlin.config.CompilerConfiguration;
 
 import java.io.File;
 import java.util.*;
@@ -37,6 +43,16 @@ public class ParserConfig {
 
     private boolean showComment = false;
 
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
+    private Project project;
+
     private ParserConfiguration.LanguageLevel languageLevel = ParserConfiguration.LanguageLevel.JAVA_8;
 
     public String getOutFilePath() {
@@ -56,9 +72,9 @@ public class ParserConfig {
         if (!file.exists()) {
             return;
         } else if (file.isDirectory()) {
-            Collection<File> files = FileUtils.listFiles(file, new String[]{"java"}, Boolean.TRUE);
+            Collection<File> files = FileUtils.listFiles(file, new String[]{"java","kt"}, Boolean.TRUE);
             files.forEach(fileTemp -> fileMap.put(fileTemp.getPath(), fileTemp));
-        } else if (filePath.endsWith("java")) {
+        } else if (filePath.endsWith("java") || filePath.endsWith("kt")) {
             fileMap.put(file.getPath(), file);
         }
     }
@@ -68,6 +84,9 @@ public class ParserConfig {
     }
 
     public boolean isFieldModifier(String modifier) {
+        if (fieldModifier.contains(Constant.VisibilityAll)){
+            return true;
+        }
         return fieldModifier.contains(modifier);
     }
 
@@ -76,6 +95,9 @@ public class ParserConfig {
     }
 
     public boolean isMethodModifier(String modifier) {
+        if (methodModifier.contains(Constant.VisibilityAll)){
+            return true;
+        }
         return methodModifier.contains(modifier);
     }
 
@@ -140,4 +162,6 @@ public class ParserConfig {
         }
         return false;
     }
+
+
 }
