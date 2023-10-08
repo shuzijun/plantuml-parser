@@ -16,7 +16,7 @@ import java.util.Set;
  *
  * @author shuzijun
  */
-public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
+public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> implements MyVisitor {
 
     private final String packageName;
 
@@ -340,16 +340,6 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
         }
     }
 
-    private PUmlClass createUmlClass() {
-        PUmlClass pUmlClass = new PUmlClass();
-        if (parserConfig.isShowPackage()) {
-            pUmlClass.setPackageName(packageName);
-        } else {
-            pUmlClass.setPackageName("");
-        }
-        return pUmlClass;
-    }
-
     private NodeList<ImportDeclaration> parseImport(Node node, PUmlClass pUmlClass, PUmlView pUmlView) {
         if (node instanceof CompilationUnit) {
             return ((CompilationUnit) node).getImports();
@@ -369,11 +359,14 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> {
         return null;
     }
 
-    private String getPackageNamePrefix(String packageName) {
-        if (packageName == null || packageName.trim().equals("")) {
-            return "";
-        } else {
-            return packageName + ".";
-        }
+
+    @Override
+    public String getPackageName() {
+        return packageName;
+    }
+
+    @Override
+    public ParserConfig getParserConfig() {
+        return parserConfig;
     }
 }

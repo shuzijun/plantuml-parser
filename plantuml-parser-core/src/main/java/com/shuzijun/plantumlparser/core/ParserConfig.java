@@ -56,9 +56,9 @@ public class ParserConfig {
         if (!file.exists()) {
             return;
         } else if (file.isDirectory()) {
-            Collection<File> files = FileUtils.listFiles(file, new String[]{"java"}, Boolean.TRUE);
+            Collection<File> files = FileUtils.listFiles(file, new String[]{"java","kt"}, Boolean.TRUE);
             files.forEach(fileTemp -> fileMap.put(fileTemp.getPath(), fileTemp));
-        } else if (filePath.endsWith("java")) {
+        } else if (filePath.endsWith("java") || filePath.endsWith("kt")) {
             fileMap.put(file.getPath(), file);
         }
     }
@@ -68,6 +68,9 @@ public class ParserConfig {
     }
 
     public boolean isFieldModifier(String modifier) {
+        if (fieldModifier.contains(Constant.VisibilityAll)){
+            return true;
+        }
         return fieldModifier.contains(modifier);
     }
 
@@ -76,6 +79,9 @@ public class ParserConfig {
     }
 
     public boolean isMethodModifier(String modifier) {
+        if (methodModifier.contains(Constant.VisibilityAll)){
+            return true;
+        }
         return methodModifier.contains(modifier);
     }
 

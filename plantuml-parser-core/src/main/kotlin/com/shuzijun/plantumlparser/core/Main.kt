@@ -78,15 +78,43 @@ fun parseKotlinCode(code: String) {
 
 fun main() {
     var code = """
-        class MyClass(val name: String, val age: Int) {
-            private constructor() : this("", 0) {
-                println("Secondary constructor")
+        // 声明一个包含 Kotlin 所有关键字的类
+        class KotlinKeywordsExample {
+            // 声明属性关键字
+            val myVal: Int = 42
+            var myVar: String = "Hello"
+            lateinit var myLateInitVar: String
+            const val myConstVal: Double = 3.14
+        
+            // 声明函数关键字
+            fun myFunction():String {
+                // 控制流关键字
+                if (myVal > 0) {
+                    println("myVal is positive")
+                } else {
+                    println("myVal is non-positive")
+                }
+        
+                when (myVar) {
+                    "Hello" -> println("myVar is Hello")
+                    else -> println("myVar is not Hello")
+                }
+        
+        
             }
-            
-            val publicProperty: String = "Public Property"
-            private val privateProperty: String = "Private Property"
-            internal val internalProperty: String = "Internal Property"
-            protected val protectedProperty: String = "Protected Property"
+        
+            // 类修饰符关键字
+            data class MyDataClass(val name: String)
+            open class MyBaseClass
+            interface MyInterface
+            enum class MyEnum { ONE, TWO, THREE }
+        
+            // 继承和实现关键字
+            class MyDerivedClass : MyBaseClass(), MyInterface {
+                override fun toString(): String {
+                    return "Derived Class"
+                }
+            }
         }
     """.trimIndent()
     parseKotlinCode(code)

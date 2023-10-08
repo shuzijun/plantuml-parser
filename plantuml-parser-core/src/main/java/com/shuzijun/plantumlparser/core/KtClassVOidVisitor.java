@@ -15,29 +15,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class KtClassVOidVisitor extends KtTreeVisitor<PUml> {
+public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor {
 
-    private final MyVisitor myVisitor;
+    private final String packageName;
+
+    private final ParserConfig parserConfig;
 
     public KtClassVOidVisitor(String packageName, ParserConfig parserConfig) {
-        this.myVisitor = new MyVisitor(packageName,parserConfig);
+        this.packageName = packageName;
+        this.parserConfig = parserConfig;
     }
 
+
     @Override
-    public Void visitClass( KtClass ktClass, PUml pUml) {
+    public Void visitClass(KtClass ktClass, PUml pUml) {
 
         if (!(pUml instanceof PUmlView)) {
             super.visitClassOrObject(ktClass, pUml);
             return null;
         }
 
-        if (myVisitor.isExcludeClass(ktClass.getName())){
+        if (parserConfig.isExcludeClass(ktClass.getName())) {
             return null;
         }
 
 
         PUmlView pUmlView = (PUmlView) pUml;
-        PUmlClass pUmlClass = myVisitor.createUmlClass();
+        PUmlClass pUmlClass = createUmlClass();
 
         pUmlClass.setClassName(ktClass.getName());
         if (ktClass.isInterface()) {
@@ -51,7 +55,7 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> {
 
         }
 
-        if (myVisitor.isShowComment()) {
+        if (parserConfig.isShowComment()) {
             if (ktClass.getDocComment() != null) {
                 pUmlClass.setClassComment(ktClass.getDocComment().getText());
             }
@@ -59,21 +63,20 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> {
 
         ktClass.getProperties().forEach(p -> p.accept(this, pUmlClass));
 
-        ktClass.getDeclarations().forEach( p -> {
-            if (p instanceof KtConstructor){
-                p.accept(this,pUmlClass);
-            } else if (p instanceof KtNamedFunction){
-                p.accept(this,pUmlClass);
+        ktClass.getDeclarations().forEach(p -> {
+            if (p instanceof KtConstructor) {
+                p.accept(this, pUmlClass);
+            } else if (p instanceof KtNamedFunction) {
+                p.accept(this, pUmlClass);
             }
         });
 
-       pUmlView.addPUmlClass(pUmlClass);
+        pUmlView.addPUmlClass(pUmlClass);
 
 
+        PsiElement node = ktClass.getParent();
 
-       PsiElement node = ktClass.getParent();
-
-       List<KtImportDirective>  importDeclarations = parseImport(node, pUmlClass, pUmlView);
+        List<KtImportDirective> importDeclarations = parseImport(node, pUmlClass, pUmlView);
 
         Map<String, String> importMap = new HashMap<>();
         if (importDeclarations != null) {
@@ -85,35 +88,35 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> {
         List<KtSuperTypeListEntry> superClassEntries = ktClass.getSuperTypeListEntries();
         for (KtSuperTypeListEntry superClassEntry : superClassEntries) {
             if (superClassEntry != null) {
-                if (superClassEntry.getElementType() == KtStubElementTypes.SUPER_TYPE_ENTRY){
-                        PUmlRelation pUmlRelation = new PUmlRelation();
-                        pUmlRelation.setTarget(myVisitor.getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName());
-                        if (importMap.containsKey(superClassEntry.getText())) {
-                            if (myVisitor.isShowPackage()) {
-                                pUmlRelation.setSource(importMap.get(superClassEntry.getText()));
-                            } else {
-                                pUmlRelation.setSource(superClassEntry.getText());
-                            }
-                        } else {
-                            pUmlRelation.setSource(myVisitor.getPackageNamePrefix(pUmlClass.getPackageName()) + superClassEntry.getText());
-                        }
-                        pUmlRelation.setRelation("<|..");
-                        pUmlView.addPUmlRelation(pUmlRelation);
-                } else if (superClassEntry.getElementType() == KtStubElementTypes.SUPER_TYPE_CALL_ENTRY){
+                if (superClassEntry.getElementType() == KtStubElementTypes.SUPER_TYPE_ENTRY) {
                     PUmlRelation pUmlRelation = new PUmlRelation();
-                    pUmlRelation.setTarget(myVisitor.getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName());
+                    pUmlRelation.setTarget(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName());
                     if (importMap.containsKey(superClassEntry.getText())) {
-                        if (myVisitor.isShowPackage()) {
+                        if (parserConfig.isShowPackage()) {
                             pUmlRelation.setSource(importMap.get(superClassEntry.getText()));
                         } else {
                             pUmlRelation.setSource(superClassEntry.getText());
                         }
                     } else {
-                        pUmlRelation.setSource(myVisitor.getPackageNamePrefix(pUmlClass.getPackageName()) + superClassEntry.getText());
+                        pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + superClassEntry.getText());
+                    }
+                    pUmlRelation.setRelation("<|..");
+                    pUmlView.addPUmlRelation(pUmlRelation);
+                } else if (superClassEntry.getElementType() == KtStubElementTypes.SUPER_TYPE_CALL_ENTRY) {
+                    PUmlRelation pUmlRelation = new PUmlRelation();
+                    pUmlRelation.setTarget(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName());
+                    if (importMap.containsKey(superClassEntry.getText())) {
+                        if (parserConfig.isShowPackage()) {
+                            pUmlRelation.setSource(importMap.get(superClassEntry.getText()));
+                        } else {
+                            pUmlRelation.setSource(superClassEntry.getText());
+                        }
+                    } else {
+                        pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + superClassEntry.getText());
                     }
                     pUmlRelation.setRelation("<|--");
                     pUmlView.addPUmlRelation(pUmlRelation);
-               }
+                }
 
             }
         }
@@ -121,7 +124,7 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> {
     }
 
     @Override
-    public Void visitProperty( KtProperty property, PUml pUml) {
+    public Void visitProperty(KtProperty property, PUml pUml) {
         if (!(pUml instanceof PUmlClass)) {
             super.visitProperty(property, pUml);
             return null;
@@ -131,13 +134,13 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> {
 
         pUmlField.setVisibility(VisibilityUtils.toVisibility(property));
 
-        if (myVisitor.isFieldModifier(pUmlField.getVisibility())) {
+        if (parserConfig.isFieldModifier(pUmlField.getVisibility())) {
             pUmlField.setType(getKtTypeReference(property.getTypeReference()));
             pUmlField.setName(property.getName());
             pUmlClass.addPUmlFieldList(pUmlField);
         }
 
-        if (myVisitor.isShowComment()) {
+        if (parserConfig.isShowComment()) {
             if (property.getDocComment() != null) {
                 pUmlField.setComment(property.getDocComment().getText());
             }
@@ -145,28 +148,28 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> {
         return null;
     }
 
-    private String getKtTypeReference(KtTypeReference reference)  {
+    private String getKtTypeReference(KtTypeReference reference) {
 
         if (reference != null) {
             return reference.getText();
         }
 
-        return  "Unknown";
+        return "void";
     }
 
     public Void visitPrimaryConstructor(KtPrimaryConstructor constructor, PUml pUml) {
-        return this.visitConstructor(constructor,pUml);
+        return this.visitConstructor(constructor, pUml);
     }
 
     public Void visitSecondaryConstructor(KtSecondaryConstructor constructor, PUml pUml) {
-        return this.visitConstructor(constructor,pUml);
+        return this.visitConstructor(constructor, pUml);
     }
 
     public Void visitConstructor(KtConstructor constructor, PUml pUml) {
         if (!(pUml instanceof PUmlClass)) {
             return null;
         }
-        if (!myVisitor.isShowConstructors()) {
+        if (!parserConfig.isShowConstructors()) {
             return null;
         }
         PUmlClass pUmlClass = (PUmlClass) pUml;
@@ -175,17 +178,17 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> {
 
         pUmlMethod.setVisibility(VisibilityUtils.toVisibility(constructor));
 
-        if (myVisitor.isMethodModifier(pUmlMethod.getVisibility())) {
+        if (parserConfig.isMethodModifier(pUmlMethod.getVisibility())) {
             pUmlMethod.setReturnType("<<Create>>");
             pUmlMethod.setName(constructor.getName());
 
             for (Object parameter : constructor.getValueParameters()) {
-                pUmlMethod.addParam(getKtTypeReference(((KtParameter)parameter).getTypeReference()));
+                pUmlMethod.addParam(getKtTypeReference(((KtParameter) parameter).getTypeReference()));
             }
             pUmlClass.addPUmlMethodList(pUmlMethod);
         }
-        if (myVisitor.isShowComment()) {
-            if  (constructor.getDocComment() != null) {
+        if (parserConfig.isShowComment()) {
+            if (constructor.getDocComment() != null) {
                 pUmlMethod.setComment(constructor.getDocComment().getText());
             }
         }
@@ -194,7 +197,7 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> {
     }
 
     @Override
-    public Void visitNamedFunction( KtNamedFunction function, PUml pUml) {
+    public Void visitNamedFunction(KtNamedFunction function, PUml pUml) {
         if (!(pUml instanceof PUmlClass)) {
             super.visitNamedFunction(function, pUml);
             return null;
@@ -205,16 +208,16 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> {
 
         pUmlMethod.setVisibility(VisibilityUtils.toVisibility(function));
 
-        if (myVisitor.isMethodModifier(pUmlMethod.getVisibility())) {
+        if (parserConfig.isMethodModifier(pUmlMethod.getVisibility())) {
             pUmlMethod.setReturnType(getKtTypeReference(function.getTypeReference()));
             pUmlMethod.setName(function.getName());
             for (Object parameter : function.getValueParameters()) {
-                pUmlMethod.addParam(getKtTypeReference(((KtParameter)parameter).getTypeReference()));
+                pUmlMethod.addParam(getKtTypeReference(((KtParameter) parameter).getTypeReference()));
             }
             pUmlClass.addPUmlMethodList(pUmlMethod);
         }
 
-        if (myVisitor.isShowComment()) {
+        if (parserConfig.isShowComment()) {
             if (function.getDocComment() != null) {
                 pUmlMethod.setComment(function.getDocComment().getText());
             }
@@ -223,19 +226,19 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> {
     }
 
     @Override
-    public Void visitKtElement( KtElement element, PUml pUml) {
+    public Void visitKtElement(KtElement element, PUml pUml) {
         super.visitKtElement(element, pUml);
         return null;
     }
 
     @Override
-    public Void visitKtFile( KtFile file, PUml pUml) {
+    public Void visitKtFile(KtFile file, PUml pUml) {
         super.visitKtFile(file, pUml);
         return null;
     }
 
     @Override
-    public Void visitDeclaration( KtDeclaration dcl, PUml pUml) {
+    public Void visitDeclaration(KtDeclaration dcl, PUml pUml) {
         super.visitDeclaration(dcl, pUml);
         return null;
     }
@@ -247,5 +250,15 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> {
             parseImport(node.getParent(), pUmlClass, pUmlView);
         }
         return null;
+    }
+
+    @Override
+    public String getPackageName() {
+        return packageName;
+    }
+
+    @Override
+    public ParserConfig getParserConfig() {
+        return parserConfig;
     }
 }

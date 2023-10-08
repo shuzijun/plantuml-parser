@@ -1,29 +1,25 @@
 package com.shuzijun.plantumlparser.core;
 
-public  class MyVisitor extends ParserConfig  {
-    private final String packageName;
+public interface MyVisitor {
 
-    private final ParserConfig parserConfig;
-
-    public MyVisitor(String packageName, ParserConfig parserConfig) {
-        this.packageName = packageName;
-        this.parserConfig = parserConfig;
-    }
-
-    public PUmlClass createUmlClass() {
+    default PUmlClass createUmlClass() {
         PUmlClass pUmlClass = new PUmlClass();
-        if (parserConfig.isShowPackage()) {
-            pUmlClass.setPackageName(packageName);
+        if (getParserConfig().isShowPackage()) {
+            pUmlClass.setPackageName(getPackageName());
         } else {
             pUmlClass.setPackageName("");
         }
         return pUmlClass;
     }
-    public String getPackageNamePrefix(String packageName) {
+    default String getPackageNamePrefix(String packageName) {
         if (packageName == null || packageName.trim().equals("")) {
             return "";
         } else {
             return packageName + ".";
         }
     }
+
+    String getPackageName();
+    ParserConfig getParserConfig();
+
 }
