@@ -106,31 +106,36 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor
         List<KtSuperTypeListEntry> superClassEntries = ktClass.getSuperTypeListEntries();
         for (KtSuperTypeListEntry superClassEntry : superClassEntries) {
             if (superClassEntry != null) {
+                String sourceClassName = superClassEntry.getText();
+                if (superClassEntry.getTypeAsUserType() !=null) {
+                    sourceClassName = superClassEntry.getTypeAsUserType().getReferencedName();
+                }
+
                 if (superClassEntry.getElementType() == KtStubElementTypes.SUPER_TYPE_ENTRY) {
                     PUmlRelation pUmlRelation = new PUmlRelation();
                     pUmlRelation.setTarget(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName());
-                    if (importMap.containsKey(superClassEntry.getText())) {
+                    if (importMap.containsKey(sourceClassName)) {
                         if (parserConfig.isShowPackage()) {
-                            pUmlRelation.setSource(importMap.get(superClassEntry.getText()));
+                            pUmlRelation.setSource(importMap.get(sourceClassName));
                         } else {
-                            pUmlRelation.setSource(superClassEntry.getText());
+                            pUmlRelation.setSource(sourceClassName);
                         }
                     } else {
-                        pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + superClassEntry.getText());
+                        pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + sourceClassName);
                     }
                     pUmlRelation.setRelation("<|..");
                     pUmlView.addPUmlRelation(pUmlRelation);
                 } else if (superClassEntry.getElementType() == KtStubElementTypes.SUPER_TYPE_CALL_ENTRY) {
                     PUmlRelation pUmlRelation = new PUmlRelation();
                     pUmlRelation.setTarget(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName());
-                    if (importMap.containsKey(superClassEntry.getTypeReference().getText())) {
+                    if (importMap.containsKey(sourceClassName)) {
                         if (parserConfig.isShowPackage()) {
-                            pUmlRelation.setSource(importMap.get(superClassEntry.getTypeReference().getText()));
+                            pUmlRelation.setSource(importMap.get(sourceClassName));
                         } else {
-                            pUmlRelation.setSource(superClassEntry.getTypeReference().getText());
+                            pUmlRelation.setSource(sourceClassName);
                         }
                     } else {
-                        pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + superClassEntry.getTypeReference().getText());
+                        pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + sourceClassName);
                     }
                     pUmlRelation.setRelation("<|--");
                     pUmlView.addPUmlRelation(pUmlRelation);
