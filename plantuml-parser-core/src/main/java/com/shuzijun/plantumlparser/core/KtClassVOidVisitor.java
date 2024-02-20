@@ -94,10 +94,10 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor
         if (importDeclarations != null) {
             for (KtImportDirective importDeclaration : importDeclarations) {
                 ImportPath importPath = importDeclaration.getImportPath();
-                if (importPath.getAlias() == null) {
-                    importMap.put(importPath.getImportedName().asString(), importPath.getFqName().toString());
-                } else {
+                if (importPath.getAlias() != null) {
                     importMap.put(importPath.getAlias().asString(), importPath.getFqName().toString());
+                } else if (importPath.getImportedName() != null) {
+                    importMap.put(importPath.getImportedName().asString(), importPath.getFqName().toString());
                 }
 
             }
