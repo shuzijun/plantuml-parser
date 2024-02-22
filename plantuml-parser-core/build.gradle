@@ -6,7 +6,7 @@ plugins {
 
 group 'com.shuzijun'
 archivesBaseName = 'plantuml-parser-core'
-version '0.0.9'
+version '0.0.10'
 
 repositories {
     mavenCentral()

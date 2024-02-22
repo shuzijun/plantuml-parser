@@ -81,6 +81,7 @@ public class PUmlClass implements PUml{
 
         if(!pUmlFieldList.isEmpty()){
             int commentIdx = 0;
+            fieldComment.append("\n");
             for (PUmlField pUmlField : pUmlFieldList) {
                 if(pUmlField.getComment() != null && pUmlField.getComment().length() > 0){
                     fieldComment.append("note ");
@@ -100,6 +101,7 @@ public class PUmlClass implements PUml{
 
         if(!pUmlMethodList.isEmpty()){
             int commentIdx = 0;
+            fieldComment.append("\n");
             for (PUmlMethod pUmlMethod : pUmlMethodList) {
                 if(pUmlMethod.getComment() != null && pUmlMethod.getComment().length() > 0){
                     fieldComment.append("note ");
