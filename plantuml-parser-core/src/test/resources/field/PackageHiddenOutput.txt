@@ -1,0 +1,15 @@
+@startuml
+class Wheel {
+}
+class Engine {
+}
+class Car {
+- Engine engine
+- Wheel[] wheels
+}
+
+
+
+Car *--> Engine
+Car o--> Wheel
+@enduml

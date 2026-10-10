@@ -1,0 +1,15 @@
+@startuml
+class car.Wheel {
+}
+class engine.Engine {
+}
+class car.Car {
+- Engine engine
+- Wheel[] wheels
+}
+
+
+
+car.Car *--> engine.Engine
+car.Car o--> car.Wheel
+@enduml

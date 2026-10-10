@@ -1,0 +1,34 @@
+@startuml
+class repository.MemoryRepository {
++ String find(String)
+}
+
+class controller.Controller {
++ List<AppService> history
++ MemoryRepository? current
++ String handle(String)
+}
+
+
+interface repository.Repository {
++ String find(String)
+}
+
+class service.Service {
+- String name
++ String run(String)
+}
+
+
+class repository.Store {
++ List<Repository> items
+}
+
+
+
+repository.Repository <|.. repository.MemoryRepository
+controller.Controller *--> service.Service
+controller.Controller o--> service.Service
+controller.Controller *--> repository.MemoryRepository
+service.Service *--> repository.Repository
+@enduml

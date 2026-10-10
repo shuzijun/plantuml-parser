@@ -3,6 +3,8 @@ package com.shuzijun.plantumlparser.core;
 import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 import java.util.EnumSet;
@@ -79,6 +81,15 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> implements MyVisi
         if (importDeclarations != null) {
             for (ImportDeclaration importDeclaration : importDeclarations) {
                 importMap.put(importDeclaration.getName().getIdentifier(), importDeclaration.getName().toString());
+            }
+        }
+        if (!cORid.isInterface()) {
+            Set<String> typeParameterSet = new HashSet<>();
+            for (TypeParameter typeParameter : cORid.getTypeParameters()) {
+                typeParameterSet.add(typeParameter.getNameAsString());
+            }
+            for (FieldDeclaration field : cORid.getFields()) {
+                parseFieldRelation(field, pUmlClass, pUmlView, importMap, typeParameterSet);
             }
         }
         if (cORid.getImplementedTypes().size() != 0) {
@@ -337,6 +348,55 @@ public class ClassVoidVisitor extends VoidVisitorAdapter<PUml> implements MyVisi
             enumConstantDeclaration.getComment().ifPresent(comment -> {
                 pUmlField.setComment(comment.getContent());
             });
+        }
+    }
+
+    private void parseFieldRelation(FieldDeclaration field, PUmlClass pUmlClass, PUmlView pUmlView, Map<String, String> importMap, Set<String> typeParameterSet) {
+        if (field.isStatic()) {
+            return;
+        }
+        String visibility = Constant.VisibilityDefault;
+        for (Modifier modifier : field.getModifiers()) {
+            if (VisibilityUtils.isVisibility(modifier.toString().trim())) {
+                visibility = modifier.toString().trim();
+                break;
+            }
+        }
+        if (!parserConfig.isFieldModifier(visibility)) {
+            return;
+        }
+        for (VariableDeclarator variable : field.getVariables()) {
+            addFieldRelation(variable.getType(), "*-->", pUmlClass, pUmlView, importMap, typeParameterSet);
+        }
+    }
+
+    private void addFieldRelation(Type type, String relation, PUmlClass pUmlClass, PUmlView pUmlView, Map<String, String> importMap, Set<String> typeParameterSet) {
+        if (type.isArrayType()) {
+            addFieldRelation(type.asArrayType().getComponentType(), "o-->", pUmlClass, pUmlView, importMap, typeParameterSet);
+        } else if (type.isWildcardType()) {
+            type.asWildcardType().getExtendedType().ifPresent(extendedType -> addFieldRelation(extendedType, relation, pUmlClass, pUmlView, importMap, typeParameterSet));
+            type.asWildcardType().getSuperType().ifPresent(superType -> addFieldRelation(superType, relation, pUmlClass, pUmlView, importMap, typeParameterSet));
+        } else if (type.isClassOrInterfaceType()) {
+            ClassOrInterfaceType classOrInterfaceType = type.asClassOrInterfaceType();
+            classOrInterfaceType.getTypeArguments().ifPresent(typeArguments -> typeArguments.forEach(typeArgument -> addFieldRelation(typeArgument, "o-->", pUmlClass, pUmlView, importMap, typeParameterSet)));
+            if (!classOrInterfaceType.getScope().isPresent() && typeParameterSet.contains(classOrInterfaceType.getNameAsString())) {
+                return;
+            }
+
+            PUmlRelation pUmlRelation = new PUmlRelation();
+            pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName());
+            String typeName = classOrInterfaceType.getNameAsString();
+            if (!parserConfig.isShowPackage()) {
+                pUmlRelation.setTarget(typeName);
+            } else if (classOrInterfaceType.getScope().isPresent()) {
+                pUmlRelation.setTarget(classOrInterfaceType.getNameWithScope());
+            } else if (importMap.containsKey(typeName)) {
+                pUmlRelation.setTarget(importMap.get(typeName));
+            } else {
+                pUmlRelation.setTarget(getPackageNamePrefix(pUmlClass.getPackageName()) + typeName);
+            }
+            pUmlRelation.setRelation(relation);
+            pUmlView.addPUmlFieldRelation(pUmlRelation);
         }
     }
 

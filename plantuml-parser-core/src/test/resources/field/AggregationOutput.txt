@@ -1,0 +1,30 @@
+@startuml
+class Team {
+- Member leader
+- Member deputy
+- List<Member> members
+- Member[] alumni
+- Map<String,Role> roles
+- {static} Team instance
+}
+
+enum Role {
++  LEAD
++  MEMBER
+}
+
+class Member {
+- String name
+}
+
+class Box {
+- Member value
+- List<Member> values
+}
+
+
+
+Team *--> Member
+Team o--> Member
+Team o--> Role
+@enduml

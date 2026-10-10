@@ -21,6 +21,10 @@ public class PUmlRelation {
         this.target = target;
     }
 
+    public String getTarget() {
+        return target;
+    }
+
     public void setRelation(String relation) {
         this.relation = relation;
     }

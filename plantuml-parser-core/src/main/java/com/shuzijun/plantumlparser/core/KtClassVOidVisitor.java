@@ -8,8 +8,10 @@ import org.jetbrains.kotlin.psi.stubs.elements.KtStubElementTypes;
 import org.jetbrains.kotlin.resolve.ImportPath;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor {
 
@@ -100,6 +102,23 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor
                     importMap.put(importPath.getImportedName().asString(), importPath.getFqName().toString());
                 }
 
+            }
+        }
+
+        Set<String> typeParameterSet = new HashSet<>();
+        for (KtTypeParameter typeParameter : ktClass.getTypeParameters()) {
+            typeParameterSet.add(typeParameter.getName());
+        }
+        if (ktClass.getPrimaryConstructor() != null) {
+            for (KtParameter parameter : ktClass.getPrimaryConstructor().getValueParameters()) {
+                if (parameter.hasValOrVar()) {
+                    parsePropertyRelation(parameter, parameter.getTypeReference(), pUmlClass, pUmlView, importMap, typeParameterSet);
+                }
+            }
+        }
+        for (KtDeclaration declaration : ktClass.getDeclarations()) {
+            if (declaration instanceof KtProperty) {
+                parsePropertyRelation(declaration, ((KtProperty) declaration).getTypeReference(), pUmlClass, pUmlView, importMap, typeParameterSet);
             }
         }
 
@@ -195,6 +214,52 @@ public class KtClassVOidVisitor extends KtTreeVisitor<PUml> implements MyVisitor
             }
         }
         return null;
+    }
+
+    private void parsePropertyRelation(KtModifierListOwner property, KtTypeReference typeReference, PUmlClass pUmlClass, PUmlView pUmlView, Map<String, String> importMap, Set<String> typeParameterSet) {
+        if (!parserConfig.isFieldModifier(VisibilityUtils.toVisibility(property))) {
+            return;
+        }
+        addPropertyRelation(typeReference, "*-->", pUmlClass, pUmlView, importMap, typeParameterSet);
+    }
+
+    private void addPropertyRelation(KtTypeReference typeReference, String relation, PUmlClass pUmlClass, PUmlView pUmlView, Map<String, String> importMap, Set<String> typeParameterSet) {
+        if (typeReference == null) {
+            return;
+        }
+        KtTypeElement typeElement = typeReference.getTypeElement();
+        if (typeElement instanceof KtNullableType) {
+            typeElement = ((KtNullableType) typeElement).getInnerType();
+        }
+        if (!(typeElement instanceof KtUserType)) {
+            return;
+        }
+        KtUserType userType = (KtUserType) typeElement;
+        for (KtTypeProjection typeArgument : userType.getTypeArguments()) {
+            addPropertyRelation(typeArgument.getTypeReference(), "o-->", pUmlClass, pUmlView, importMap, typeParameterSet);
+        }
+
+        String typeName = userType.getReferencedName();
+        if (userType.getQualifier() == null && typeParameterSet.contains(typeName)) {
+            return;
+        }
+        String target;
+        if (userType.getQualifier() != null) {
+            target = userType.getQualifier().getText() + "." + typeName;
+        } else if (importMap.containsKey(typeName)) {
+            target = importMap.get(typeName);
+        } else {
+            target = getPackageNamePrefix(pUmlClass.getPackageName()) + typeName;
+        }
+        if (!parserConfig.isShowPackage()) {
+            target = target.substring(target.lastIndexOf(".") + 1);
+        }
+
+        PUmlRelation pUmlRelation = new PUmlRelation();
+        pUmlRelation.setSource(getPackageNamePrefix(pUmlClass.getPackageName()) + pUmlClass.getClassName());
+        pUmlRelation.setTarget(target);
+        pUmlRelation.setRelation(relation);
+        pUmlView.addPUmlFieldRelation(pUmlRelation);
     }
 
     private String getKtTypeReference(KtTypeReference reference, String defaultValue) {

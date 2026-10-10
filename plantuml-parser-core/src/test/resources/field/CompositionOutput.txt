@@ -1,0 +1,34 @@
+@startuml
+class Job {
+- String role
+- String salary
+- String id
++ String getRole()
++ String getSalary()
++ String getId()
++ void setRole(String)
++ void setSalary(String)
++ void setId(String)
+}
+
+
+class Person {
+- Job job
+- Hobby hobby
++ String getThePersonSalary()
++ String getThePersonHobby()
+}
+
+
+class Hobby {
+- String hobbyName
++ String getHobbyName()
++ void setHobbyName(String)
+}
+
+
+
+
+Person *--> Job
+Person *--> Hobby
+@enduml
